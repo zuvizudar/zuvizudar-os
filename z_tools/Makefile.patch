@@ -1,0 +1,44 @@
+--- Makefile	2005-09-25 19:03:04.520847744 +0900
+@@ -15,8 +15,11 @@
+ RULEFILE = $(TOOLPATH)haribote/haribote.rul
+ EDIMG    = $(TOOLPATH)edimg.exe
+ IMGTOL   = $(TOOLPATH)imgtol.com
+-COPY     = copy
+-DEL      = del
++
++#COPY     = copy
++COPY     = cp
++#DEL      = del
++DEL      = rm
+ 
+ # デフォルト動作
+ 
+@@ -45,8 +48,10 @@
+ bootpack.hrb : bootpack.bim Makefile
+ 	$(BIM2HRB) bootpack.bim bootpack.hrb 0
+ 
++#zuvizudar.sys : asmhead.bin bootpack.hrb Makefile
++#	copy /B asmhead.bin+bootpack.hrb zuvizudar.sys
+ zuvizudar.sys : asmhead.bin bootpack.hrb Makefile
+-	copy /B asmhead.bin+bootpack.hrb zuvizudar.sys
++	cat asmhead.bin bootpack.hrb > zuvizudar.sys
+ 
+ zuvizudar.img : ipl10.bin zuvizudar.sys Makefile
+ 	$(EDIMG)   imgin:../z_tools/fdimg0at.tek \
+@@ -70,10 +75,13 @@
+ img :
+ 	$(MAKE) zuvizudar.img
+ 
++#run :
++#	$(MAKE) img
++#	$(COPY) zuvizudar.img ..\z_tools\qemu\fdimage0.bin
++#	$(MAKE) -C ../z_tools/qemu
+ run :
+-	$(MAKE) img
+-	$(COPY) zuvizudar.img ..\z_tools\qemu\fdimage0.bin
+-	$(MAKE) -C ../z_tools/qemu
++	../z_tools/make.exe img
++	qemu -m 32 -localtime -std-vga -fda zuvizudar.img
+ 
+ install :
+ 	$(MAKE) img
