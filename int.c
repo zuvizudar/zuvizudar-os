@@ -20,24 +20,4 @@ void init_pic(void){
 
 	return;
 }
-#define PORT_KEYDAT 0x0060
-KEYBUF keybuf;
-FIFO8 keyfifo,mousefifo;
-void inthandler21(int *esp){
-	//キーボード
-	unsigned char data;
-	io_out8(PIC0_OCW2,0x61);
-	data=io_in8(PORT_KEYDAT);
-	fifo8_put(&keyfifo,data);
-	return;
-}
-void inthandler2c(int *esp){
-	//マウス
-	unsigned char data;
-	io_out8(PIC1_OCW2,0x64);
-	io_out8(PIC0_OCW2,0x62);
-	data=io_in8(PORT_KEYDAT);
-	fifo8_put(&mousefifo,data);
-	return;
-}
 

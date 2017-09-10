@@ -26,13 +26,14 @@ VRAM	EQU		0x0ff8
 		INT		0x16 			
 		MOV		[LEDS],AL
 
+;割り込み禁止
 		MOV		AL,0xff
 		OUT		0x21,AL
 		NOP						
 		OUT		0xa1,AL
 
 		CLI						
-
+;1MB以上のメモリを使えるように
 		CALL	waitkbdout
 		MOV		AL,0xd1
 		OUT		0x64,AL
@@ -43,7 +44,7 @@ VRAM	EQU		0x0ff8
 
 
 [INSTRSET "i486p"]				
-
+;プロテクトモード移行
 		LGDT	[GDTR0]			
 		MOV		EAX,CR0
 		AND		EAX,0x7fffffff	
@@ -77,7 +78,7 @@ pipelineflush:
 		IMUL	ECX,512*18*2/4	
 		SUB		ECX,512/4		
 		CALL	memcpy
-
+;bootpackの起動
 		MOV		EBX,BOTPAK
 		MOV		ECX,[EBX+16]
 		ADD		ECX,3			
