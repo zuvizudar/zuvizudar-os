@@ -5,7 +5,7 @@ typedef struct{
 	unsigned char buf[3],phase;
 	int x,y,btn;
 }MOUSE_DEC;
-
+ 
 extern FIFO8 keyfifo,mousefifo;
 void enable_mouse(MOUSE_DEC *mdec);
 void init_keyboard(void);

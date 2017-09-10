@@ -23,7 +23,7 @@ void wait_keyboard_controller_sendready(void){
 		}
 	}
 }
-
+ 
 void init_keyboard(void){
 	wait_keyboard_controller_sendready();
 	io_out8(PORT_KEYCMD,KEYCMD_WRITE_MODE);

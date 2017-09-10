@@ -11,7 +11,6 @@ void inthandler2c(int *esp){
 	return;
 }
 
-
 #define KEYCMD_SENDTO_MOUSE		0xd4
 #define MOUSECMD_ENABLE			0xf4
 

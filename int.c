@@ -17,7 +17,7 @@ void init_pic(void){
 
 	io_out8(PIC0_IMR,  0xfb  ); // 11111011 PIC1以外は全て禁止
 	io_out8(PIC1_IMR,  0xff  ); // 11111111 全ての割り込みを受け付けない
-
+ 
 	return;
 }
 
