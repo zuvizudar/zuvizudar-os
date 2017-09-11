@@ -21,8 +21,11 @@ int io_load_eflags(void);
 void io_store_eflags(int eflags);
 void load_gdtr(int limit,int addr);
 void load_idtr(int limit,int addr);
+int load_cr0(void);
+void store_cr0(int cr0);
 void asm_inthandler21(void);
 void asm_inthandler2c(void);
+unsigned int memtest_sub(unsigned int start,unsigned int end);
 
 //fifo.c
 typedef struct{
@@ -118,7 +121,7 @@ typedef struct{
 	int x,y,btn;
 }MOUSE_DEC;
 void inthandler2c(int *esp);
-void enable_mouse(MOUSE_DEC *mdec,unsigned char dat);
+void enable_mouse(MOUSE_DEC *mdec);
 int mouse_decode(MOUSE_DEC *mdec,unsigned char dat);
 extern FIFO8 mousefifo;
 
@@ -127,4 +130,5 @@ void inthandler21(int *esp);
 void wait_keyboard_controller_sendready(void);
 void init_keyboard(void);
 extern FIFO8  keyfifo;
-
+#define PORT_KEYDAT 0x0060 
+#define PORT_KEYCMD 0x0064 
