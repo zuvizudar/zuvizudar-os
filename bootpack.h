@@ -23,6 +23,7 @@ void load_gdtr(int limit,int addr);
 void load_idtr(int limit,int addr);
 int load_cr0(void);
 void store_cr0(int cr0);
+void asm_inthandler20(void);
 void asm_inthandler21(void);
 void asm_inthandler2c(void);
 unsigned int memtest_sub(unsigned int start,unsigned int end);
@@ -181,3 +182,24 @@ void sheet_refresh(SHEET *sht, int bx0, int by0, int bx1, int by1);
 void sheet_slide( SHEET *sht, int vx0, int vy0);
 void sheet_free(SHEET *sht);
 
+/* timer.c */
+#define MAX_TIMER		500
+typedef struct _TIMER TIMER;
+typedef struct _TIMERCTL TIMERCTL;
+struct _TIMER {
+	unsigned int timeout, flags;
+	FIFO8 *fifo;
+	unsigned char data;
+};
+struct _TIMERCTL {
+	unsigned int count, next, using;
+	TIMER *timers[MAX_TIMER];
+	TIMER timers0[MAX_TIMER];
+};
+extern TIMERCTL timerctl;
+void init_pit(void);
+TIMER *timer_alloc(void);
+void timer_free(TIMER *timer);
+void timer_init(TIMER *timer,FIFO8 *fifo, unsigned char data);
+void timer_settime(TIMER *timer, unsigned int timeout);
+void inthandler20(int *esp);
