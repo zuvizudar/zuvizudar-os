@@ -37,10 +37,20 @@ typedef struct{
 	unsigned char *buf;
 	int p,q,size,free,flags;
 }FIFO8;
-void fifo8_init(FIFO8 *fifo,int size,unsigned char *buf);
+typedef struct{
+	int *buf;
+	int p,q,size,free,flags;	
+}FIFO32;
+/*void fifo8_init(FIFO8 *fifo,int size,unsigned char *buf);
 int fifo8_put(FIFO8 *fifo,unsigned char data);
 int fifo8_get(FIFO8 *fifo);
 int fifo8_status(FIFO8 *fifo);
+*/
+void fifo32_init(FIFO32 *fifo,int size,int *buf);
+int fifo32_put(FIFO32 *fifo,int data);
+int fifo32_get(FIFO32 *fifo);
+int fifo32_status(FIFO32 *fifo);
+
 
 //graphic.c
 void init_palette(void);
@@ -122,15 +132,15 @@ typedef struct{
 	int x,y,btn;
 }MOUSE_DEC;
 void inthandler2c(int *esp);
-void enable_mouse(MOUSE_DEC *mdec);
+void enable_mouse(FIFO32 *fifo,int data,MOUSE_DEC *mdec);
 int mouse_decode(MOUSE_DEC *mdec,unsigned char dat);
-extern FIFO8 mousefifo;
+//extern FIFO8 mousefifo;
 
 //keyboard.c
 void inthandler21(int *esp);
 void wait_keyboard_controller_sendready(void);
-void init_keyboard(void);
-extern FIFO8  keyfifo;
+void init_keyboard(FIFO32 *fifo,int data0);
+//extern FIFO8  keyfifo;
 #define PORT_KEYDAT 0x0060 
 #define PORT_KEYCMD 0x0064 
 
@@ -187,19 +197,20 @@ void sheet_free(SHEET *sht);
 typedef struct _TIMER TIMER;
 typedef struct _TIMERCTL TIMERCTL;
 struct _TIMER {
+	TIMER *next_timer;
 	unsigned int timeout, flags;
-	FIFO8 *fifo;
-	unsigned char data;
+	FIFO32 *fifo;
+	int data;
 };
 struct _TIMERCTL {
-	unsigned int count, next, using;
-	TIMER *timers[MAX_TIMER];
+	unsigned int count, next_time;
+	TIMER *t0;
 	TIMER timers0[MAX_TIMER];
 };
 extern TIMERCTL timerctl;
 void init_pit(void);
 TIMER *timer_alloc(void);
 void timer_free(TIMER *timer);
-void timer_init(TIMER *timer,FIFO8 *fifo, unsigned char data);
+void timer_init(TIMER *timer,FIFO32 *fifo, int data);
 void timer_settime(TIMER *timer, unsigned int timeout);
 void inthandler20(int *esp);

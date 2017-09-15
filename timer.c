@@ -4,21 +4,25 @@
 
 TIMERCTL timerctl;
 
-#define TIMER_FLAGS_ALLOC		1	/* 確保した状態 */
-#define TIMER_FLAGS_USING		2	/* タイマ作動中 */
+#define TIMER_FLAGS_ALLOC		1	//確保
+#define TIMER_FLAGS_USING		2	//作動中
 
 void init_pit(void)
 {
 	int i;
+	TIMER *t;
 	io_out8(PIT_CTRL, 0x34);
 	io_out8(PIT_CNT0, 0x9c);
 	io_out8(PIT_CNT0, 0x2e);
 	timerctl.count = 0;
-	timerctl.next = 0xffffffff; /* 最初は作動中のタイマがないので */
-	timerctl.using = 0;
 	for (i = 0; i < MAX_TIMER; i++) {
-		timerctl.timers0[i].flags = 0; /* 未使用 */
+		timerctl.timers0[i].flags = 0;
 	}
+	t=timer_alloc();
+	t->timeout=0xffffffff;
+	t->flags=TIMER_FLAGS_USING;
+	timerctl.t0=t;
+	timerctl.next_time = 0xffffffff;
 	return;
 }
 
@@ -30,16 +34,16 @@ TIMER *timer_alloc(void){
 			return &timerctl.timers0[i];
 		}
 	}
-	return 0; /* 見つからなかった */
+	return 0;
 }
 
 void timer_free( TIMER *timer)
 {
-	timer->flags = 0; /* 未使用 */
+	timer->flags = 0;
 	return;
 }
 
-void timer_init( TIMER *timer,  FIFO8 *fifo, unsigned char data)
+void timer_init( TIMER *timer,  FIFO32 *fifo, int data)
 {
 	timer->fifo = fifo;
 	timer->data = data;
@@ -48,55 +52,54 @@ void timer_init( TIMER *timer,  FIFO8 *fifo, unsigned char data)
 
 void timer_settime( TIMER *timer, unsigned int timeout)
 {
-	int e, i, j;
+	int e;
+	TIMER *t,*s;
 	timer->timeout = timeout + timerctl.count;
 	timer->flags = TIMER_FLAGS_USING;
 	e = io_load_eflags();
 	io_cli();
-	/* どこに入れればいいかを探す */
-	for (i = 0; i < timerctl.using; i++) {
-		if (timerctl.timers[i]->timeout >= timer->timeout) {
-			break;
+	t=timerctl.t0;
+	if(timer->timeout<=t->timeout){
+		timerctl.t0=timer;
+		timer->next_timer=t;
+		timerctl.next_time=timer->timeout;
+		io_store_eflags(e);
+		return;
+	}
+	for(;;){
+		s=t;
+		t=t->next_timer;
+		if(timer->timeout <= t->timeout){
+			s->next_timer=timer;
+			timer->next_timer=t;
+			io_store_eflags(e);
+			return;
 		}
 	}
-	timerctl.using++;
-	/* うしろをずらす */
-	for (j = timerctl.using; j > i; j--) {
-		timerctl.timers[j] = timerctl.timers[j - 1];
-	}
-	/* あいたすきまに入れる */
-	timerctl.timers[i] = timer;
-	timerctl.next = timerctl.timers[0]->timeout;
+	s->next_timer=timer;
+	timer->next_timer=0;
 	io_store_eflags(e);
 	return;
 }
 
 void inthandler20(int *esp)
 {
-	int i, j;
-	io_out8(PIC0_OCW2, 0x60);	/* IRQ-00受付完了をPICに通知 */
+	TIMER *timer;
+	io_out8(PIC0_OCW2, 0x60);	
 	timerctl.count++;
-	if (timerctl.next > timerctl.count) {
+	if (timerctl.next_time > timerctl.count) {
 		return;
 	}
-	for (i = 0; i < timerctl.using; i++) {
-		/* timersのタイマは全て動作中のものなので、flagsを確認しない */
-		if (timerctl.timers[i]->timeout > timerctl.count) {
+	timer=timerctl.t0;
+	for (;;) {
+		if (timer->timeout > timerctl.count) {
 			break;
 		}
-		/* タイムアウト */
-		timerctl.timers[i]->flags = TIMER_FLAGS_ALLOC;
-		fifo8_put(timerctl.timers[i]->fifo, timerctl.timers[i]->data);
+		timer->flags = TIMER_FLAGS_ALLOC;
+		fifo32_put(timer->fifo, timer->data);
+		timer=timer->next_timer;
 	}
-	/* ちょうどi個のタイマがタイムアウトした。残りをずらす。 */
-	timerctl.using -= i;
-	for (j = 0; j < timerctl.using; j++) {
-		timerctl.timers[j] = timerctl.timers[i + j];
-	}
-	if (timerctl.using > 0) {
-		timerctl.next = timerctl.timers[0]->timeout;
-	} else {
-		timerctl.next = 0xffffffff;
-	}
+	timerctl.t0=timer;
+	timerctl.next_time=timer->timeout;
 	return;
 }
