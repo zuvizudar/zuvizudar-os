@@ -23,12 +23,17 @@ void load_gdtr(int limit,int addr);
 void load_idtr(int limit,int addr);
 int load_cr0(void);
 void store_cr0(int cr0);
+void load_tr(int tr);
 void asm_inthandler20(void);
 void asm_inthandler21(void);
 void asm_inthandler2c(void);
 unsigned int memtest_sub(unsigned int start,unsigned int end);
+void farjmp(int eip,int cs);
 
 //fifo.c
+
+typedef struct _TASK TASK;
+
 typedef struct{
 	unsigned char data[32],next;
 	int next_r,next_w,len;
@@ -40,13 +45,14 @@ typedef struct{
 typedef struct{
 	int *buf;
 	int p,q,size,free,flags;	
+	TASK *task;
 }FIFO32;
 /*void fifo8_init(FIFO8 *fifo,int size,unsigned char *buf);
 int fifo8_put(FIFO8 *fifo,unsigned char data);
 int fifo8_get(FIFO8 *fifo);
 int fifo8_status(FIFO8 *fifo);
 */
-void fifo32_init(FIFO32 *fifo,int size,int *buf);
+void fifo32_init(FIFO32 *fifo,int size,int *buf,TASK *task);
 int fifo32_put(FIFO32 *fifo,int data);
 int fifo32_get(FIFO32 *fifo);
 int fifo32_status(FIFO32 *fifo);
@@ -103,6 +109,7 @@ void set_gatedesc(GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 #define LIMIT_BOTPAK	0x0007ffff
 #define AR_DATA32_RW	0x4092
 #define AR_CODE32_ER	0x409a
+#define AR_TSS32			0x0089
 #define AR_INTGATE32	0x008e
 
 
@@ -214,3 +221,38 @@ void timer_free(TIMER *timer);
 void timer_init(TIMER *timer,FIFO32 *fifo, int data);
 void timer_settime(TIMER *timer, unsigned int timeout);
 void inthandler20(int *esp);
+
+#define MAX_TASKS 1000
+#define MAX_TASKS_LV 100
+#define MAX_TASKLEVELS 10
+#define TASK_GDT0 3
+typedef struct {
+	int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
+	int eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
+	int es, cs, ss, ds, fs, gs;
+	int ldtr, iomap;
+}TSS32;
+struct _TASK{
+	int sel,flags;
+	int priority,level;
+	TSS32 tss;
+};
+
+typedef struct{
+	int running;
+	int now;
+	TASK *tasks[MAX_TASKS_LV];
+}TASKLEVEL;
+
+typedef struct{
+	int now_lv;
+	char lv_change;
+	TASKLEVEL level[MAX_TASKLEVELS];
+	TASK tasks0[MAX_TASKS];
+}TASKCTL;
+extern TIMER *task_timer;
+TASK *task_init(MEMMAN *memman);
+TASK *task_alloc(void);
+void task_run(TASK *task,int level,int priority);
+void task_switch(void);
+void task_sleep(TASK *task);

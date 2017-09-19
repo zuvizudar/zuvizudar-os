@@ -85,6 +85,7 @@ void timer_settime( TIMER *timer, unsigned int timeout)
 void inthandler20(int *esp)
 {
 	TIMER *timer;
+	char ts=0;
 	io_out8(PIC0_OCW2, 0x60);	
 	timerctl.count++;
 	if (timerctl.next_time > timerctl.count) {
@@ -96,10 +97,18 @@ void inthandler20(int *esp)
 			break;
 		}
 		timer->flags = TIMER_FLAGS_ALLOC;
-		fifo32_put(timer->fifo, timer->data);
+		if(timer!=task_timer){
+			fifo32_put(timer->fifo,timer->data);
+		}
+		else{
+			ts=1;
+		}
 		timer=timer->next_timer;
 	}
 	timerctl.t0=timer;
 	timerctl.next_time=timer->timeout;
+	if(ts!=0){
+		task_switch();
+	}
 	return;
 }
