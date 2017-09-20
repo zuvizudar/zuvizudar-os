@@ -235,6 +235,7 @@ typedef struct {
 struct _TASK{
 	int sel,flags;
 	int priority,level;
+	FIFO32 fifo;
 	TSS32 tss;
 };
 
@@ -252,6 +253,7 @@ typedef struct{
 }TASKCTL;
 extern TIMER *task_timer;
 TASK *task_init(MEMMAN *memman);
+TASK *task_now(void);
 TASK *task_alloc(void);
 void task_run(TASK *task,int level,int priority);
 void task_switch(void);
