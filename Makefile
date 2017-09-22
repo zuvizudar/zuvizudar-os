@@ -1,5 +1,6 @@
 TOOLPATH=z_tools/
 INCPATH=z_tools/zuvizudar/
+OBJS_BOOTPACK = bootpack.obj naskfunc.obj hankaku.obj graphic.obj dsctbl.obj int.obj fifo.obj mouse.obj keyboard.obj memory.obj sheet.obj timer.obj mtask.obj window.obj console.obj file.obj
 
 MAKE     = make -r
 NASK = $(TOOLPATH)nask.exe
@@ -34,21 +35,26 @@ hankaku.bin:hankaku.txt Makefile
 hankaku.obj: hankaku.bin Makefile
 	$(BIN2OBJ) hankaku.bin hankaku.obj _hankaku
 
-bootpack.bim : bootpack.obj naskfunc.obj hankaku.obj graphic.obj dsctbl.obj int.obj fifo.obj mouse.obj keyboard.obj memory.obj sheet.obj timer.obj mtask.obj Makefile
+bootpack.bim : $(OBJS_BOOTPACK) Makefile
 	$(OBJ2BIM) @$(RULEFILE) out:bootpack.bim stack:3136k map:bootpack.map \
-		bootpack.obj naskfunc.obj hankaku.obj graphic.obj dsctbl.obj int.obj fifo.obj mouse.obj keyboard.obj memory.obj sheet.obj timer.obj mtask.obj
+		$(OBJS_BOOTPACK)
 
 bootpack.hrb : bootpack.bim Makefile
 	$(BIM2HRB) bootpack.bim bootpack.hrb 0
 
-zuvizudar.sys : asmhead.bin bootpack.hrb Makefile
-	cat asmhead.bin bootpack.hrb > zuvizudar.sys
+hlt.zuv : hlt.nas Makefile
+	$(NASK) hlt.nas hlt.zuv hlt.lst
 
-zuvizudar.img : ipl10.bin zuvizudar.sys Makefile
+zuvizuda.sys : asmhead.bin bootpack.hrb Makefile
+	cat asmhead.bin bootpack.hrb > zuvizuda.sys
+
+zuvizuda.img : ipl10.bin zuvizuda.sys hlt.zuv Makefile
 	$(EDIMG)   imgin:z_tools/fdimg0at.tek \
 		wbinimg src:ipl10.bin len:512 from:0 to:0 \
-	 	copy from:zuvizudar.sys to:@: \
-		imgout:zuvizudar.img
+	 	copy from:zuvizuda.sys to:@: \
+		copy from:ipl10.nas to:@:\
+		copy from:hlt.zuv to:@:\
+		imgout:zuvizuda.img
 
 
 %.gas :%.c Makefile
@@ -62,11 +68,11 @@ zuvizudar.img : ipl10.bin zuvizudar.sys Makefile
 
 
 img :
-	$(MAKE) zuvizudar.img
+	$(MAKE) zuvizuda.img
 
 run :
 	$(MAKE) img
-	$(QEMU) -fda zuvizudar.img
+	$(QEMU) -fda zuvizuda.img
 
 clean :
 	-$(DEL) *.bin
@@ -79,8 +85,8 @@ clean :
 	-$(DEL) bootpack.map
 	-$(DEL) bootpack.bim
 	-$(DEL) bootpack.hrb
-	-$(DEL) zuvizudar.sys
+	-$(DEL) zuvizuda.sys
 
 src_only :
 	$(MAKE) clean
-	-$(DEL) zuvizudar.img
+	-$(DEL) zuvizuda.img
