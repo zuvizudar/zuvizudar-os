@@ -17,7 +17,11 @@
 	GLOBAL _memtest_sub
 	GLOBAL _farjmp
 	GLOBAL _taskswitch4,_taskswitch3
+	GLOBAL _asm_cons_putchar
+	GLOBAL _farcall
+	GLOBAL _asm_zuv_api
 	EXTERN _inthandler21,_inthandler2c,_inthandler20
+	EXTERN _zuv_api
 
 [SECTION .text]	
 
@@ -209,3 +213,16 @@ _taskswitch4:
 _farjmp:
 	JMP FAR[ESP+4]
 	RET
+
+_farcall:
+	CALL FAR [ESP+4]
+	RET
+
+_asm_zuv_api:
+	STI
+	PUSHAD
+	PUSHAD
+	CALL _zuv_api
+	ADD ESP,32
+	POPAD
+	IRETD

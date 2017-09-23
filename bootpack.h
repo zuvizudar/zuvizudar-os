@@ -30,6 +30,9 @@ void asm_inthandler21(void);
 void asm_inthandler2c(void);
 unsigned int memtest_sub(unsigned int start,unsigned int end);
 void farjmp(int eip,int cs);
+void farcall(int eip,int cs);
+void asm_cons_putchar(void);
+void asm_zuv_api(void);
 
 //fifo.c
 
@@ -267,9 +270,21 @@ void make_textbox8(SHEET *sht, int x0, int y0, int sx, int sy, int c);
 void make_wtitle8(unsigned char *buf,int xsize,char *title,char act);
 
 //console
+typedef struct{
+	SHEET *sht;
+	int cursor_x,cursor_y,cursor_c;
+}CONSOLE;
 void console_task(SHEET *sheet,int memtotal);
-int cons_newline(int cursor_y,SHEET *sheet);
-void task_b_main(SHEET *sht_back);
+void cons_putchar(CONSOLE *cons,int chr,char move);
+void cons_newline(CONSOLE *cons);
+void cons_runcmd(char *cmdline,CONSOLE *cons,int *fat,int memtotal);
+void cmd_mem(CONSOLE *cons,int memtotal);
+void cmd_clear(CONSOLE *cons);
+void cmd_ls(CONSOLE *cons);
+void cmd_cat(CONSOLE *cons,int *fat,char *cmdline);
+int cmd_app(CONSOLE *cons, int *fat,char *cmdline);
+void zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax);
+
 
 //file
 typedef struct{
@@ -281,4 +296,5 @@ typedef struct{
 
 void file_readfat(int *fat, unsigned char *img);
 void file_loadfile(int clustno, int size, char *buf, int *fat, char *img);
+FILEINFO *file_search(char *name,FILEINFO *finfo,int max);
 

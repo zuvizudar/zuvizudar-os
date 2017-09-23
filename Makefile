@@ -42,18 +42,18 @@ bootpack.bim : $(OBJS_BOOTPACK) Makefile
 bootpack.hrb : bootpack.bim Makefile
 	$(BIM2HRB) bootpack.bim bootpack.hrb 0
 
-hlt.zuv : hlt.nas Makefile
-	$(NASK) hlt.nas hlt.zuv hlt.lst
+hello.zuv :	hello.nas Makefile
+	$(NASK) hello.nas hello.zuv hello.lst
 
 zuvizuda.sys : asmhead.bin bootpack.hrb Makefile
 	cat asmhead.bin bootpack.hrb > zuvizuda.sys
 
-zuvizuda.img : ipl10.bin zuvizuda.sys hlt.zuv Makefile
+zuvizuda.img : ipl10.bin zuvizuda.sys hello.zuv Makefile
 	$(EDIMG)   imgin:z_tools/fdimg0at.tek \
 		wbinimg src:ipl10.bin len:512 from:0 to:0 \
 	 	copy from:zuvizuda.sys to:@: \
 		copy from:ipl10.nas to:@:\
-		copy from:hlt.zuv to:@:\
+		copy from:hello.zuv to:@:\
 		imgout:zuvizuda.img
 
 
