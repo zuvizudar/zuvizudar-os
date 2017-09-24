@@ -28,11 +28,15 @@ void load_tr(int tr);
 void asm_inthandler20(void);
 void asm_inthandler21(void);
 void asm_inthandler2c(void);
+void asm_inthandler0d(void);
+void asm_inthandler0c(void);
 unsigned int memtest_sub(unsigned int start,unsigned int end);
 void farjmp(int eip,int cs);
 void farcall(int eip,int cs);
 void asm_cons_putchar(void);
 void asm_zuv_api(void);
+void start_app(int eip,int cs,int esp,int ds,int *tss_esp0);
+void asm_end_app(void);
 
 //fifo.c
 
@@ -183,6 +187,7 @@ struct _SHEET{
 	unsigned char *buf;
 	int bxsize, bysize, vx0, vy0, col_inv, height, flags;
 	SHTCTL *ctl;
+	TASK *task;
 };
 
 struct _SHTCTL{
@@ -273,18 +278,23 @@ void make_wtitle8(unsigned char *buf,int xsize,char *title,char act);
 typedef struct{
 	SHEET *sht;
 	int cursor_x,cursor_y,cursor_c;
+	TIMER *timer;
 }CONSOLE;
 void console_task(SHEET *sheet,int memtotal);
 void cons_putchar(CONSOLE *cons,int chr,char move);
 void cons_newline(CONSOLE *cons);
+void cons_putstr0(CONSOLE *cons,char *s);
+void cons_putstr1(CONSOLE *cons,char *s,int l);
 void cons_runcmd(char *cmdline,CONSOLE *cons,int *fat,int memtotal);
 void cmd_mem(CONSOLE *cons,int memtotal);
 void cmd_clear(CONSOLE *cons);
 void cmd_ls(CONSOLE *cons);
 void cmd_cat(CONSOLE *cons,int *fat,char *cmdline);
 int cmd_app(CONSOLE *cons, int *fat,char *cmdline);
-void zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax);
-
+int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax);
+int *inthandler0d(int *esp);
+int *inthandler0c(int *esp);
+void zuv_api_linewin(SHEET *sht,int x0,int y0,int x1,int y1,int col);
 
 //file
 typedef struct{

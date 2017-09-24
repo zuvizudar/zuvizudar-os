@@ -39,6 +39,7 @@ void ZuviMain(void){
 	TASK *task_a,*task_cons;
 	TIMER *timer;
 	int key_to=0,key_shift=0,key_leds=(boot_info->leds >> 4)&7,keycmd_wait=1;
+	CONSOLE *cons;
 
 	init_gdtidt();
 	init_pic();
@@ -61,6 +62,7 @@ void ZuviMain(void){
 	task_a=task_init(memman);
 	fifo.task=task_a;
 	task_run(task_a,1,2);
+	*((int *)0x0fe4) = (int) shtctl;
 	//back
 	sht_back=sheet_alloc(shtctl);
 	buf_back=(unsigned char *)memman_alloc_4k(memman,boot_info->screen_x*boot_info->screen_y);
@@ -255,6 +257,14 @@ void ZuviMain(void){
 					fifo32_put(&keycmd, KEYCMD_LED);
 					fifo32_put(&keycmd, key_leds);
 				}
+				if (i ==256 +0x3b && key_shift != 0 && task_cons->tss.ss0 != 0){
+					cons =(CONSOLE *) *((int *)0x0fec);
+					cons_putstr0(cons,"\nBreak(key):\n");
+					io_cli();
+					task_cons->tss.eax=(int)&(task_cons->tss.esp0);
+					task_cons->tss.eip=(int)asm_end_app;
+					io_sti();
+				}
 				if (i == 256 + 0xfa) {
 					keycmd_wait = -1;
 				}
@@ -272,21 +282,7 @@ void ZuviMain(void){
 			else if(512<=i&&i<=767){
 				//マウスのデータは3byteずつ
 				if (mouse_decode(&mdec,i-512)!= 0) {
-		/*			sprintf(s, "[lcr %4d %4d]",mdec.x,mdec.y);
-					if((mdec.btn&0x01)!=0){
-						s[1]='L';
-					}
-					if((mdec.btn&0x02)!=0){
-						s[3]='R';
-					}
-					if((mdec.btn&0x04)!=0){
-						s[2]='C';
-					}
-				putfonts8_asc_sht(sht_back,32,16,COL8_FFFFFF,COL8_840084,s,15);
-			*/	
-					//マウス移動
-				//	boxfill8(buf_back,boot_info->screen_x,COL8_840084,mx,my,mx+15,my+15);
-					mx+=mdec.x;
+				mx+=mdec.x;
 					my+=mdec.y;
 					if(mx<0)
 						mx=0;
@@ -297,11 +293,7 @@ void ZuviMain(void){
 					if(my>boot_info->screen_y-1)
 						mx=boot_info->screen_y-1;
 					
-				/*	sprintf(s,"(%3d,%3d)",mx,my);
-					putfonts8_asc_sht(sht_back,0,0,COL8_FFFFFF,COL8_840084,s,10);
-					*/
-					//putblock8_8(buf_back,boot_info->screen_x,16,16,mx,my,mccursor,16);
-					sheet_slide(sht_mouse,mx,my);
+				sheet_slide(sht_mouse,mx,my);
 					if((mdec.btn & 0x01 )!=0){
 						sheet_slide(sht_win,mx-80,my-8);
 					}

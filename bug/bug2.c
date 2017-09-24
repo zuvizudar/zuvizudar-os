@@ -1,0 +1,3 @@
+void ZuviMain(void){
+	for(;;){}
+}
