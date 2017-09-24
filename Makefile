@@ -134,12 +134,35 @@ noodle.bim : noodle.obj a_nask.obj Makefile
 noodle.zuv : noodle.bim Makefile
 	$(BIM2HRB) noodle.bim noodle.zuv 40k
 
+
+beepdown.bim : beepdown.obj a_nask.obj Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:beepdown.bim stack:1k map:beepdown.map \
+		beepdown.obj a_nask.obj
+
+beepdown.zuv : beepdown.bim Makefile
+	$(BIM2HRB) beepdown.bim beepdown.zuv 40k
+
+color.bim : color.obj a_nask.obj Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:color.bim stack:1k map:color.map \
+		color.obj a_nask.obj
+
+color.zuv : color.bim Makefile
+	$(BIM2HRB) color.bim color.zuv 56k
+
+color2.bim : color2.obj a_nask.obj Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:color2.bim stack:1k map:color2.map \
+		color2.obj a_nask.obj
+
+color2.zuv : color2.bim Makefile
+	$(BIM2HRB) color2.bim color2.zuv 56k
+
 zuvizuda.sys : asmhead.bin bootpack.hrb Makefile
 	cat asmhead.bin bootpack.hrb > zuvizuda.sys
 
 zuvizuda.img : ipl10.bin zuvizuda.sys hello.zuv hello2.zuv a.zuv hello3.zuv \
 								hello4.zuv hello5.zuv  winhelo.zuv winhelo2.zuv\
 							 winhelo3.zuv star1.zuv	stars.zuv stars2.zuv lines.zuv walk.zuv noodle.zuv\
+							 beepdown.zuv color.zuv color2.zuv\
 							 Makefile
 	$(EDIMG)   imgin:z_tools/fdimg0at.tek \
 		wbinimg src:ipl10.bin len:512 from:0 to:0 \
@@ -160,6 +183,9 @@ zuvizuda.img : ipl10.bin zuvizuda.sys hello.zuv hello2.zuv a.zuv hello3.zuv \
 		copy from:lines.zuv to:@:\
 		copy from:walk.zuv to:@:\
 		copy from:noodle.zuv to:@:\
+		copy from:beepdown.zuv to:@:\
+		copy from:color.zuv to:@:\
+		copy from:color2.zuv to:@:\
 		imgout:zuvizuda.img
 
 

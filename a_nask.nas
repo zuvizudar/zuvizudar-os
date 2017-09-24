@@ -16,6 +16,7 @@
 	GLOBAL _api_refreshwin
 	GLOBAL _api_linewin,_api_closewin,_api_getkey
 	GLOBAL _api_alloctimer,_api_inittimer,_api_settimer,_api_freetimer
+	GLOBAL _api_beep
 
 [SECTION .text]
 _api_putchar:
@@ -215,3 +216,9 @@ _api_freetimer:
 		INT		0x40
 		POP		EBX
 		RET
+
+_api_beep:
+	MOV EDX,20
+	MOV EAX,[ESP+4]
+	INT 0x40
+	RET

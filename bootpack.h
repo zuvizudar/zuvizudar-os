@@ -231,6 +231,8 @@ void timer_free(TIMER *timer);
 void timer_init(TIMER *timer,FIFO32 *fifo, int data);
 void timer_settime(TIMER *timer, unsigned int timeout);
 void inthandler20(int *esp);
+int timer_cancel(TIMER *timer);
+void timer_cancelall(FIFO32 *fifo);
 
 #define MAX_TASKS 1000
 #define MAX_TASKS_LV 100
@@ -242,11 +244,16 @@ typedef struct {
 	int es, cs, ss, ds, fs, gs;
 	int ldtr, iomap;
 }TSS32;
+
+typedef struct _CONSOLE CONSOLE;
+
 struct _TASK{
 	int sel,flags;
 	int priority,level;
 	FIFO32 fifo;
 	TSS32 tss;
+	CONSOLE *cons;
+	int ds_base;
 };
 
 typedef struct{
@@ -276,11 +283,11 @@ void make_textbox8(SHEET *sht, int x0, int y0, int sx, int sy, int c);
 void make_wtitle8(unsigned char *buf,int xsize,char *title,char act);
 void change_wtitle8(SHEET *sht,char act);
 //console
-typedef struct{
+struct _CONSOLE{
 	SHEET *sht;
 	int cursor_x,cursor_y,cursor_c;
 	TIMER *timer;
-}CONSOLE;
+};
 void console_task(SHEET *sheet,int memtotal);
 void cons_putchar(CONSOLE *cons,int chr,char move);
 void cons_newline(CONSOLE *cons);

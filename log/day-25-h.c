@@ -3,35 +3,32 @@
 #include"bootpack.h"
 
 #define KEYCMD_LED 0xed
-void keywin_off(SHEET *key_win);
-void keywin_on(SHEET *key_win);
+int keywin_off(SHEET *key_win,SHEET *sht_win, int cur_c, int cur_x);
+int keywin_on(SHEET *key_win, SHEET *sht_win, int cur_c);
 void ZuviMain(void){
 
 	BOOTINFO *boot_info=(BOOTINFO*)0x0ff0;
-	SHTCTL *shtctl;
-	char s[40];
 	FIFO32 fifo,keycmd;
-	int fifobuf[128],keycmd_buf[32],*cons_fifo[2];
-	int mx,my,i;
+	char s[40];
+	int fifobuf[128],keycmd_buf[32];
+	int mx,my,i,cursor_x,cursor_c;//count=0;
 	unsigned int memtotal;
 	MOUSE_DEC mdec;
 	MEMMAN *memman=(MEMMAN*)MEMMAN_ADDR;
-	unsigned char *buf_back,buf_mouse[256],*buf_cons[2];
-	SHEET *sht_back,*sht_mouse,*sht_cons[2];
-	TASK *task_a,*task_cons[2],*task;
+	SHTCTL *shtctl;
 	static char keytable0[0x80] = {
-		0,   0,   '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0x08, 0,
-		'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', '[', 0x0a, 0, 'A', 'S',
+		0,   0,   '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0,   0,
+		'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', '[', 0,   0,   'A', 'S',
 		'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', ':', 0,   0,   ']', 'Z', 'X', 'C', 'V',
 		'B', 'N', 'M', ',', '.', '/', 0,   '*', 0,   ' ', 0,   0,   0,   0,   0,   0,
 		0,   0,   0,   0,   0,   0,   0,   '7', '8', '9', '-', '4', '5', '6', '+', '1',
 		'2', '3', '0', '.', 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
 		0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-		0,   0,   0,   0x5c, 0,  0,   0,   0,   0,   0,   0,   0,   0,   0x5c, 0,  0
+		0,   0,   0,   0x5c, 0,  0,   0,   0,   0,   0,   0,   0,   0,   0x5c, 0,  
 	};
 	static char keytable1[0x80] = {
-		0,   0,   '!', 0x22, '#', '$', '%', '&', 0x27, '(', ')', '~', '=', '~', 0x08, 0,
-		'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '`', '{', 0x0a, 0, 'A', 'S',
+		0,   0,   '!', 0x22, '#', '$', '%', '&', 0x27, '(', ')', '~', '=', '~', 0,   0,
+		'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '`', '{', 0,   0,   'A', 'S',
 		'D', 'F', 'G', 'H', 'J', 'K', 'L', '+', '*', 0,   0,   '}', 'Z', 'X', 'C', 'V',
 		'B', 'N', 'M', '<', '>', '?', 0,   '*', 0,   ' ', 0,   0,   0,   0,   0,   0,
 		0,   0,   0,   0,   0,   0,   0,   '7', '8', '9', '-', '4', '5', '6', '+', '1',
@@ -39,7 +36,12 @@ void ZuviMain(void){
 		0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
 		0,   0,   0,   '_', 0,   0,   0,   0,   0,   0,   0,   0,   0,   '|', 0,   0
 	};
-	int key_shift=0,key_leds=(boot_info->leds >> 4)&7,keycmd_wait=-1;
+	unsigned char *buf_back,buf_mouse[256],*buf_win,*buf_cons[2];
+	SHEET *sht_back,*sht_mouse,*sht_win,*sht_cons[2];
+	TASK *task_a,*task_cons[2],*task;
+	TIMER *timer;
+	int key_shift=0,key_leds=(boot_info->leds >> 4)&7,keycmd_wait=1;
+	CONSOLE *cons;
 	int j,x,y,mmx=-1,mmy=-1;
 	SHEET *sht=0,*key_win;
 
@@ -92,9 +94,19 @@ void ZuviMain(void){
 		task_run(task_cons[i], 2, 2);
 		sht_cons[i]->task = task_cons[i];
 		sht_cons[i]->flags |= 0x20;  
-		cons_fifo[i]=(int *)memman_alloc_4k(memman,128*4);
-		fifo32_init(&task_cons[i]->fifo,128,cons_fifo[i],task_cons[i]);
 	}
+	//win
+	sht_win=sheet_alloc(shtctl);
+	buf_win=(unsigned char *)memman_alloc_4k(memman,144*52);
+	sheet_setbuf(sht_win,buf_win,144,52,-1);
+  make_window8(buf_win,144,52,"task_a",1);
+	make_textbox8(sht_win,8,28,128,16,COL8_FFFFFF);
+	cursor_x=8;
+	cursor_c=COL8_FFFFFF;
+	timer=timer_alloc();
+	timer_init(timer,&fifo,1);
+	timer_settime(timer,50);
+	
 	//mouse
 	sht_mouse=sheet_alloc(shtctl);
 	sheet_setbuf(sht_mouse,buf_mouse,16,16,99);
@@ -104,15 +116,16 @@ void ZuviMain(void){
 
 	sheet_slide(sht_back,0,0);
 	sheet_slide(sht_mouse,mx,my);
+	sheet_slide(sht_win,8,56);
 	sheet_slide(sht_cons[1],56,6);
 	sheet_slide(sht_cons[0],8,2);
 
 	sheet_updown(sht_back,0);
 	sheet_updown(sht_cons[0],1);
 	sheet_updown(sht_cons[1],2);
-	sheet_updown(sht_mouse,3);
-	key_win = sht_cons[0];
-	keywin_on(key_win);
+	sheet_updown(sht_win,3);
+	sheet_updown(sht_mouse,4);
+	key_win = sht_win;
 
 	fifo32_put(&keycmd,KEYCMD_LED);
 	fifo32_put(&keycmd,key_leds);
@@ -132,7 +145,7 @@ void ZuviMain(void){
 			io_sti();
 			if(key_win->flags == 0){
 				key_win = shtctl->sheets[shtctl->top -1];
-				keywin_on(key_win);
+				cursor_c = keywin_on(key_win,sht_win,cursor_c);
 			}
 			if(256<=i&&i<=511){
 				if (i < 0x80 + 256) {
@@ -151,19 +164,42 @@ void ZuviMain(void){
 						s[0] += 0x20;
 					}
 				}
-				if(s[0]!=0){ //通常、バック、enter
-					fifo32_put(&key_win->task->fifo,s[0]+256);
-				}
-				if(i ==256 +0x0f){ //tab
-					keywin_off(key_win);
-					j=key_win->height-1;
-					if(j==0){
-						j=shtctl->top-1;
+				if(s[0]!=0){
+					if(key_win == sht_win){
+						if(cursor_x<128){
+							s[1]=0;
+							putfonts8_asc_sht(sht_win,cursor_x,28,COL8_000000,COL8_FFFFFF,s,1);
+							cursor_x+=8;
+						}
 					}
-					key_win=shtctl->sheets[j];
-					keywin_on(key_win);
+					else{
+						fifo32_put(&key_win->task->fifo,s[0]+256);
+					}
 				}
-
+				if(i == 256 + 0x0e) {//バックスペース
+					if (key_win == sht_win) {
+						if (cursor_x > 8) {
+							putfonts8_asc_sht(sht_win, cursor_x, 28, COL8_000000, COL8_FFFFFF, " ", 1);
+							cursor_x -= 8;
+						}
+					} else {
+						fifo32_put(&key_win->task->fifo, 8 + 256);
+					}
+				}
+				if(i == 256+0x1c){ //enter
+					if(key_win != sht_win){
+						fifo32_put(&key_win->task->fifo,10+256);
+					}
+				}
+				if (i == 256 + 0x0f) { //tab
+						cursor_c = keywin_off(key_win,sht_win,cursor_c,cursor_x);
+						j = key_win->height-1;
+						if(j==0){
+							j = shtctl->top-1;
+						}
+						key_win = shtctl->sheets[j];
+						cursor_c = keywin_on(key_win,sht_win,cursor_c);
+					} 
 				if (i == 256 + 0x2a){
 					key_shift |= 1;
 				}
@@ -173,7 +209,7 @@ void ZuviMain(void){
 				if (i == 256 + 0xaa) {
 					key_shift &= ~1;
 				}
-				if(i == 256 + 0xb6) {
+				if (i == 256 + 0xb6) {
 					key_shift &= ~2;
 				}
 				if (i == 256 + 0x3a) {
@@ -212,7 +248,13 @@ void ZuviMain(void){
 					wait_keyboard_controller_sendready();
 					io_out8(PORT_KEYDAT, keycmd_wait);
 				}
+				if(cursor_c<=0){
+					boxfill8(sht_win->buf,sht_win->bxsize,cursor_c,cursor_x,28,cursor_x+7,43);
+				}
+				boxfill8(sht_win->buf,sht_win->bxsize,cursor_c,cursor_x,28,cursor_x+7,43);
+				sheet_refresh(sht_win,cursor_x,28,cursor_x+8,44);
 			}
+
 			else if(512<=i&&i<=767){
 				//マウスのデータは3byteずつ
 				if (mouse_decode(&mdec,i-512)!= 0) {
@@ -238,9 +280,9 @@ void ZuviMain(void){
 									if (sht->buf[y * sht->bxsize + x] != sht->col_inv) {
 										sheet_updown(sht, shtctl->top - 1);
 										if (sht != key_win) {
-											keywin_off(key_win);
-											key_win=sht;
-											keywin_on(key_win);
+											cursor_c = keywin_off(key_win, sht_win, cursor_c, cursor_x);
+											key_win = sht;
+											cursor_c = keywin_on(key_win, sht_win, cursor_c);
 										}
 										if (3 <= x && x < sht->bxsize - 3 && 3 <= y && y < 21) {
 											mmx = mx;
@@ -275,23 +317,50 @@ void ZuviMain(void){
 					}
 				}
 			}
+			else if(i<=1){
+				if(i!=0){
+					timer_init(timer,&fifo,0);
+					if(cursor_c>=0){
+						cursor_c=COL8_000000;
+					}
+				}
+				else{
+					timer_init(timer,&fifo,1);
+					if(cursor_c>=0){
+						cursor_c=COL8_FFFFFF;
+					}
+				}
+				timer_settime(timer,50);
+				if(cursor_c>=0){
+					boxfill8(sht_win->buf,sht_win->bxsize,cursor_c,cursor_x,28,cursor_x+7,43);
+					sheet_refresh(sht_win,cursor_x,28,cursor_x+8,44);
+				}
+			}
 		}
 	}
 }
 
-
-void keywin_off(SHEET *key_win){
+int keywin_off(SHEET *key_win,SHEET *sht_win, int cur_c, int cur_x){
 	change_wtitle8(key_win, 0);
-	if ((key_win->flags & 0x20) != 0) {
-		fifo32_put(&key_win->task->fifo, 3);
+	if (key_win == sht_win) {
+		cur_c = -1;
+		boxfill8(sht_win->buf, sht_win->bxsize, COL8_FFFFFF, cur_x, 28, cur_x + 7, 43);
+	} else {
+		if ((key_win->flags & 0x20) != 0) {
+			fifo32_put(&key_win->task->fifo, 3);
+		}
 	}
-	return;
+	return cur_c;
 }
 
-void keywin_on(SHEET *key_win){
+int keywin_on(SHEET *key_win,SHEET *sht_win, int cur_c){
 	change_wtitle8(key_win, 1);
-	if ((key_win->flags & 0x20) != 0) {
-		fifo32_put(&key_win->task->fifo, 2);
+	if (key_win == sht_win) {
+		cur_c = COL8_000000;
+	} else {
+		if ((key_win->flags & 0x20) != 0) {
+			fifo32_put(&key_win->task->fifo, 2);
+		}
 	}
-	return;
+	return cur_c;
 }

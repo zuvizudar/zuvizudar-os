@@ -3,22 +3,21 @@
 #include<string.h>
 
 void console_task(SHEET *sheet,int memtotal){
-	TIMER *timer;
 	TASK *task = task_now();
 	MEMMAN *memman = (MEMMAN *) MEMMAN_ADDR;
-	int i, fifobuf[128],*fat = (int *) memman_alloc_4k(memman,4*2880);
+	int i,*fat = (int *) memman_alloc_4k(memman,4*2880);
 	CONSOLE cons;
 	char cmdline[30];
 	cons.sht=sheet;
 	cons.cursor_x=8;
 	cons.cursor_y=28;
 	cons.cursor_c=-1;
-	*((int *)0x0fec)= (int)&cons;
+	//*((int *)0x0fec)= (int)&cons;
+	task->cons = &cons;
 
-	fifo32_init(&task->fifo,128,fifobuf,task);
-	timer = timer_alloc();
-	timer_init(timer, &task->fifo, 1);
-	timer_settime(timer, 50);
+	cons.timer =timer_alloc();
+	timer_init(cons.timer, &task->fifo, 1);
+	timer_settime(cons.timer, 50);
 	file_readfat(fat,(unsigned char *)(ADR_DISKIMG+0x000200));
 
 	cons_putchar(&cons,'>',1);
@@ -33,17 +32,17 @@ void console_task(SHEET *sheet,int memtotal){
 			io_sti();
 			if (i <= 1) {
 				if (i != 0) {
-					timer_init(timer, &task->fifo, 0);
+					timer_init(cons.timer, &task->fifo, 0);
 					if(cons.cursor_c>=0){
 						cons.cursor_c = COL8_FFFFFF;
 					}
 				} else {
-					timer_init(timer, &task->fifo, 1);
+					timer_init(cons.timer, &task->fifo, 1);
 					if(cons.cursor_c>=0){
 						cons.cursor_c = COL8_000000;
 					}
 				}
-				timer_settime(timer, 50);
+				timer_settime(cons.timer, 50);
 			}
 			if(i==2){
 				cons.cursor_c=COL8_FFFFFF;
@@ -270,13 +269,14 @@ int cmd_app(CONSOLE *cons, int *fat,char *cmdline){
 			datsiz = *((int *) (p + 0x0010));
 			dathrb = *((int *) (p + 0x0014));
 			q = (char *) memman_alloc_4k(memman, segsiz);
-			*((int *) 0xfe8) = (int) q;
-			set_segmdesc(gdt + 1003, finfo->size - 1, (int) p, AR_CODE32_ER + 0x60);
-			set_segmdesc(gdt + 1004, segsiz - 1,      (int) q, AR_DATA32_RW + 0x60);
+			//*((int *) 0xfe8) = (int) q;
+			task->ds_base =(int)q;
+			set_segmdesc(gdt + task->sel/ 8+ 1000, finfo->size - 1, (int) p, AR_CODE32_ER + 0x60);
+			set_segmdesc(gdt + task->sel/ 8+ 2000, segsiz - 1,      (int) q, AR_DATA32_RW + 0x60);
 			for (i = 0; i < datsiz; i++) {
 				q[esp + i] = p[dathrb + i];
 			}
-			start_app(0x1b, 1003 * 8, esp, 1004 * 8, &(task->tss.esp0));
+			start_app(0x1b, task->sel + 1000 *8, esp,task->sel + 2000 * 8, &(task->tss.esp0));
 			shtctl = (SHTCTL *) *((int *) 0x0fe4);
 			for (i = 0; i < MAX_SHEETS; i++) {
 				sht = &(shtctl->sheets0[i]);
@@ -296,9 +296,9 @@ int cmd_app(CONSOLE *cons, int *fat,char *cmdline){
 	return 0;
 }
 int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax){
-	int ds_base=*((int*)0xfe8);
 	TASK *task=task_now();
-	CONSOLE *cons = (CONSOLE *) *((int *) 0x0fec);
+	int ds_base= task->ds_base;
+	CONSOLE *cons = task->cons;
 	SHTCTL *shtctl = (SHTCTL *) *((int *) 0x0fe4);
 	SHEET *sht;
 	int *reg = &eax +1;
@@ -321,8 +321,8 @@ int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 		sht->flags |= 0x10;
 		sheet_setbuf(sht, (char *) ebx + ds_base, esi, edi, eax);
 		make_window8((char *) ebx + ds_base, esi, edi, (char *) ecx + ds_base, 0);
-		sheet_slide(sht, 100, 50);
-		sheet_updown(sht, 3);	
+		sheet_slide(sht, (shtctl->xsize-esi)/2,(shtctl->ysize-edi)/2);
+		sheet_updown(sht, shtctl->top);	
 		reg[7] = (int) sht;
 	}
 	else if (edx == 6){
@@ -416,12 +416,26 @@ int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 	else if (edx ==19){
 		timer_free((TIMER *)ebx);
 	}
+	else if (edx == 20){
+		if(eax == 0){
+			i = io_in8(0x61);
+			io_out8(0x61,i & 0x0d);
+		}
+		else{
+			i =1193180000/eax;
+			io_out8(0x43,0xb6);
+			io_out8(0x42,i & 0xff);
+			io_out8(0x42,i >> 8);
+			i = io_in8(0x61);
+			io_out8(0x61, (i | 0x03)& 0x0f);
+		}
+	}
 	return 0;
 }
 
 int *inthandler0c(int *esp){
-	CONSOLE *cons = (CONSOLE*) *((int*)0x0fec);
 	TASK *task = task_now();
+	CONSOLE *cons = task->cons;
 	char s[30];
 	cons_putstr0(cons, "\nINT 0c :\n Stack Exception.\n");
 	sprintf(s,"EIP=%08x\n",esp[11]);
@@ -430,8 +444,8 @@ int *inthandler0c(int *esp){
 }
 
 int *inthandler0d(int *esp){
-  CONSOLE *cons = (CONSOLE *) *((int *) 0x0fec);
 	TASK *task =task_now();
+  CONSOLE *cons = task->cons;
 	char s[30];
 	cons_putstr0(cons, "\nINT 0D :\n General Protected Exception.\n");
 	sprintf(s,"EIP =%08x\n",esp[11]);
