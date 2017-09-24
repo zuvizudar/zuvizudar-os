@@ -31,6 +31,7 @@ TIMER *timer_alloc(void){
 	for (i = 0; i < MAX_TIMER; i++) {
 		if (timerctl.timers0[i].flags == 0) {
 			timerctl.timers0[i].flags = TIMER_FLAGS_ALLOC;
+			timerctl.timers0[i].flags = 0;
 			return &timerctl.timers0[i];
 		}
 	}
@@ -110,5 +111,47 @@ void inthandler20(int *esp)
 	if(ts!=0){
 		task_switch();
 	}
+	return;
+}
+int timer_cancel(TIMER *timer){
+	int e;
+	TIMER *t;
+	e = io_load_eflags();
+	io_cli();	
+	if (timer->flags == TIMER_FLAGS_USING) {
+		if (timer == timerctl.t0) {
+			t = timer->next_timer;
+			timerctl.t0 = t;
+			timerctl.next_time = t->timeout;
+		} else {
+			t = timerctl.t0;
+			for (;;) {
+				if (t->next_timer == timer) {
+					break;
+				}
+				t = t->next_timer;
+			}
+			t->next_timer = timer->next_timer;
+		}
+		timer->flags = TIMER_FLAGS_ALLOC;
+		io_store_eflags(e);
+		return 1;
+	}
+	io_store_eflags(e);
+	return 0; 
+}
+void timer_cancelall(FIFO32 *fifo){
+	int e, i;
+	TIMER *t;
+	e = io_load_eflags();
+	io_cli();
+	for (i = 0; i < MAX_TIMER; i++) {
+		t = &timerctl.timers0[i];
+		if (t->flags != 0 && t->flags2 != 0 && t->fifo == fifo) {
+			timer_cancel(t);
+			timer_free(t);
+		}
+	}
+	io_store_eflags(e);
 	return;
 }

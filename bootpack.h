@@ -214,7 +214,8 @@ typedef struct _TIMER TIMER;
 typedef struct _TIMERCTL TIMERCTL;
 struct _TIMER {
 	TIMER *next_timer;
-	unsigned int timeout, flags;
+	unsigned int timeout;
+	char flags,flags2;
 	FIFO32 *fifo;
 	int data;
 };
@@ -273,7 +274,7 @@ void make_window8(unsigned char *buf, int xsize,int ysize,char *title,char act);
 void putfonts8_asc_sht(SHEET *sth,int x,int y,int c,int b,char *s,int l);
 void make_textbox8(SHEET *sht, int x0, int y0, int sx, int sy, int c);
 void make_wtitle8(unsigned char *buf,int xsize,char *title,char act);
-
+void change_wtitle8(SHEET *sht,char act);
 //console
 typedef struct{
 	SHEET *sht;

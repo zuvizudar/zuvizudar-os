@@ -3,6 +3,8 @@
 #include"bootpack.h"
 
 #define KEYCMD_LED 0xed
+int keywin_off(SHEET *key_win,SHEET *sht_win, int cur_c, int cur_x);
+int keywin_on(SHEET *key_win, SHEET *sht_win, int cur_c);
 void ZuviMain(void){
 
 	BOOTINFO *boot_info=(BOOTINFO*)0x0ff0;
@@ -38,8 +40,10 @@ void ZuviMain(void){
 	SHEET *sht_back,*sht_mouse,*sht_win,*sht_cons;
 	TASK *task_a,*task_cons;
 	TIMER *timer;
-	int key_to=0,key_shift=0,key_leds=(boot_info->leds >> 4)&7,keycmd_wait=1;
+	int key_shift=0,key_leds=(boot_info->leds >> 4)&7,keycmd_wait=1;
 	CONSOLE *cons;
+	int j,x,y,mmx=-1,mmy=-1;
+	SHEET *sht=0,*key_win;
 
 	init_gdtidt();
 	init_pic();
@@ -131,24 +135,15 @@ void ZuviMain(void){
 	sheet_slide(sht_mouse,mx,my);
 	sheet_slide(sht_win,8,56);
 	sheet_slide(sht_cons,32,4);
-/*	sheet_slide(sht_win_b[0],168,56);
-	sheet_slide(sht_win_b[1],8,116);
-	sheet_slide(sht_win_b[2],168,116);
-*/
-	sheet_updown(sht_back,0);
 
-/*	sheet_updown(sht_win_b[0],1);
-	sheet_updown(sht_win_b[1],2);
-	sheet_updown(sht_win_b[2],3);*/
+	sheet_updown(sht_back,0);
 	sheet_updown(sht_cons,1);
 	sheet_updown(sht_win,2);
 	sheet_updown(sht_mouse,3);
-	/*sprintf(s,"(%3d,%3d)",mx,my);
-	putfonts8_asc_sht(sht_back,0,0,COL8_FFFFFF,COL8_840084,s,10);
+	key_win = sht_win;
+	sht_cons->task = task_cons;
+	sht_cons->flags |= 0x20;
 
-	sprintf(s,"memory %dMB free:%dKB",memtotal/(1024*1024),memman_total(memman)/1024);
-	putfonts8_asc_sht(sht_back,0,32,COL8_FFFFFF,COL8_840084,s,40);
-	*/
 	fifo32_put(&keycmd,KEYCMD_LED);
 	fifo32_put(&keycmd,key_leds);
 	for (;;) {
@@ -165,10 +160,11 @@ void ZuviMain(void){
 		else {
 			i=fifo32_get(&fifo);
 			io_sti();
+			if(key_win->flags == 0){
+				key_win = shtctl->sheets[shtctl->top -1];
+				cursor_c = keywin_on(key_win,sht_win,cursor_c);
+			}
 			if(256<=i&&i<=511){
-		/*		sprintf(s,"%02x",i-256);
-				putfonts8_asc_sht(sht_back,0,16,COL8_FFFFFF,COL8_840084,s,2);
-				*/
 				if (i < 0x80 + 256) {
 					if (key_shift==0){
 							s[0] = keytable0[i - 256];
@@ -186,7 +182,7 @@ void ZuviMain(void){
 					}
 				}
 				if(s[0]!=0){
-					if(key_to==0){
+					if(key_win == sht_win){
 						if(cursor_x<128){
 							s[1]=0;
 							putfonts8_asc_sht(sht_win,cursor_x,28,COL8_000000,COL8_FFFFFF,s,1);
@@ -198,7 +194,7 @@ void ZuviMain(void){
 					}
 				}
 				if(i == 256 + 0x0e) {
-					if (key_to == 0) {
+					if (key_win == sht_win) {
 						if (cursor_x > 8) {
 							putfonts8_asc_sht(sht_win, cursor_x, 28, COL8_000000, COL8_FFFFFF, " ", 1);
 							cursor_x -= 8;
@@ -208,28 +204,19 @@ void ZuviMain(void){
 					}
 				}
 				if(i == 256+0x1c){
-					if(key_to!=0){
+					if(key_win != sht_win){
 						fifo32_put(&task_cons->fifo,10+256);
 					}
 				}
-				if (i == 256 + 0x0f) { //TAB
-					if (key_to == 0) {
-						key_to = 1;
-						make_wtitle8(buf_win,  sht_win->bxsize,  "task_a",  0);
-						make_wtitle8(buf_cons, sht_cons->bxsize, "console", 1);
-						cursor_c=-1;
-						boxfill8(sht_win->buf,sht_win->bxsize,COL8_FFFFFF,cursor_x,28,cursor_x+7,43);
-						fifo32_put(&task_cons->fifo,2);
-					} else {
-						key_to = 0;
-						make_wtitle8(buf_win,  sht_win->bxsize,  "task_a",  1);
-						make_wtitle8(buf_cons, sht_cons->bxsize, "console", 0);
-						cursor_c=COL8_000000;
-						fifo32_put(&task_cons->fifo,3);
-					}
-					sheet_refresh(sht_win,  0, 0, sht_win->bxsize,  21);
-					sheet_refresh(sht_cons, 0, 0, sht_cons->bxsize, 21);
-				}
+				if (i == 256 + 0x0f) { //tab
+						cursor_c = keywin_off(key_win,sht_win,cursor_c,cursor_x);
+						j = key_win->height-1;
+						if(j==0){
+							j = shtctl->top-1;
+						}
+						key_win = shtctl->sheets[j];
+						cursor_c = keywin_on(key_win,sht_win,cursor_c);
+					} 
 				if (i == 256 + 0x2a){
 					key_shift |= 1;
 				}
@@ -265,6 +252,9 @@ void ZuviMain(void){
 					task_cons->tss.eip=(int)asm_end_app;
 					io_sti();
 				}
+				if(i==256+0x57){
+					sheet_updown(shtctl->sheets[1],shtctl->top);
+				}
 				if (i == 256 + 0xfa) {
 					keycmd_wait = -1;
 				}
@@ -282,7 +272,7 @@ void ZuviMain(void){
 			else if(512<=i&&i<=767){
 				//マウスのデータは3byteずつ
 				if (mouse_decode(&mdec,i-512)!= 0) {
-				mx+=mdec.x;
+					mx+=mdec.x;
 					my+=mdec.y;
 					if(mx<0)
 						mx=0;
@@ -294,12 +284,52 @@ void ZuviMain(void){
 						mx=boot_info->screen_y-1;
 					
 				sheet_slide(sht_mouse,mx,my);
-					if((mdec.btn & 0x01 )!=0){
-						sheet_slide(sht_win,mx-80,my-8);
+				if ((mdec.btn & 0x01) != 0) {
+						if (mmx < 0) {
+							for (j = shtctl->top - 1; j > 0; j--) {
+								sht = shtctl->sheets[j];
+								x = mx - sht->vx0;
+								y = my - sht->vy0;
+								if (0 <= x && x < sht->bxsize && 0 <= y && y < sht->bysize) {
+									if (sht->buf[y * sht->bxsize + x] != sht->col_inv) {
+										sheet_updown(sht, shtctl->top - 1);
+										if (sht != key_win) {
+											cursor_c = keywin_off(key_win, sht_win, cursor_c, cursor_x);
+											key_win = sht;
+											cursor_c = keywin_on(key_win, sht_win, cursor_c);
+										}
+										if (3 <= x && x < sht->bxsize - 3 && 3 <= y && y < 21) {
+											mmx = mx;
+											mmy = my;
+										}
+										if (sht->bxsize - 21 <= x && x < sht->bxsize - 5 && 5 <= y && y < 19) {
+											if ((sht->flags & 0x10) != 0) {	
+												cons = (CONSOLE *) *((int *) 0x0fec);
+												cons_putstr0(cons, "\nBreak(mouse) :\n");
+												io_cli();	
+												task_cons->tss.eax = (int) &(task_cons->tss.esp0);
+												task_cons->tss.eip = (int) asm_end_app;
+												io_sti();
+											}
+										}
+										break;
+									}
+								}
+							}
+						}
+						else {
+							x = mx - mmx;
+							y = my - mmy;
+							sheet_slide(sht, sht->vx0 + x, sht->vy0 + y);
+							mmx = mx;
+							mmy = my;
+						}
+					} 
+					else {
+						mmx = -1;
 					}
-
 				}
-			} 
+			}
 			else if(i<=1){
 				if(i!=0){
 					timer_init(timer,&fifo,0);
@@ -323,5 +353,27 @@ void ZuviMain(void){
 	}
 }
 
+int keywin_off(SHEET *key_win,SHEET *sht_win, int cur_c, int cur_x){
+	change_wtitle8(key_win, 0);
+	if (key_win == sht_win) {
+		cur_c = -1;
+		boxfill8(sht_win->buf, sht_win->bxsize, COL8_FFFFFF, cur_x, 28, cur_x + 7, 43);
+	} else {
+		if ((key_win->flags & 0x20) != 0) {
+			fifo32_put(&key_win->task->fifo, 3);
+		}
+	}
+	return cur_c;
+}
 
-
+int keywin_on(SHEET *key_win,SHEET *sht_win, int cur_c){
+	change_wtitle8(key_win, 1);
+	if (key_win == sht_win) {
+		cur_c = COL8_000000;
+	} else {
+		if ((key_win->flags & 0x20) != 0) {
+			fifo32_put(&key_win->task->fifo, 2);
+		}
+	}
+	return cur_c;
+}
