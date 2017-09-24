@@ -253,7 +253,7 @@ struct _TASK{
 	FIFO32 fifo;
 	TSS32 tss;
 	CONSOLE *cons;
-	int ds_base;
+	int ds_base,cons_stack;
 };
 
 typedef struct{
@@ -269,6 +269,7 @@ typedef struct{
 	TASK tasks0[MAX_TASKS];
 }TASKCTL;
 extern TIMER *task_timer;
+extern TASKCTL *taskctl;
 TASK *task_init(MEMMAN *memman);
 TASK *task_now(void);
 TASK *task_alloc(void);
@@ -298,6 +299,9 @@ void cmd_mem(CONSOLE *cons,int memtotal);
 void cmd_clear(CONSOLE *cons);
 void cmd_ls(CONSOLE *cons);
 void cmd_cat(CONSOLE *cons,int *fat,char *cmdline);
+void cmd_exit(CONSOLE *cons,int *fat);
+void cmd_start(CONSOLE *cons,char *cmdline,int memtotal);
+void cmd_ncst(CONSOLE *cons,char *cmdline,int memtotal);
 int cmd_app(CONSOLE *cons, int *fat,char *cmdline);
 int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax);
 int *inthandler0d(int *esp);
@@ -316,3 +320,6 @@ void file_readfat(int *fat, unsigned char *img);
 void file_loadfile(int clustno, int size, char *buf, int *fat, char *img);
 FILEINFO *file_search(char *name,FILEINFO *finfo,int max);
 
+//bootpack
+TASK *open_constask(SHEET *sht, unsigned int memtotal);
+SHEET *open_console(SHTCTL *shtctl, unsigned int memtotal);
