@@ -1,0 +1,101 @@
+#include <stdio.h>
+#include <string.h>
+#include "apilib.h"
+
+int char2num(unsigned char c, int var[256])
+{
+	int i;
+	if ('0' <= c && c <= '9')
+		i = c - '0';
+	else
+		i = var[c];
+	return i;
+}
+int printf(char *format, ...){
+	va_list ap;
+	char s[1000];
+	int i;
+
+	va_start(ap,format);
+	i = vsprintf(s,format,ap);
+	api_putstr0(s);
+	va_end(ap);
+	return i;
+}
+void syntaxError(char *p){
+	printf("syntax error : %.30s\n",p);
+	api_end();
+}
+
+int ZuviMain(void){
+	int var[256];
+	int i;
+	char buf[10000];
+	int fh;
+	char c,cmdline[30],*p;
+	int cat_flag=0;
+
+	api_cmdline(cmdline,30);
+	for(p = cmdline;*p>' ';p++){ }
+	for(;*p==' ';p++){} //空白飛ばし
+	if(*p=='-'){
+		p++;
+		if(*p=='s'){
+			cat_flag=1;
+		}
+		p++;
+		for(;*p==' ';p++){} //空白飛ばし
+	}
+	fh = api_fopen(p);
+	int cnt=0;
+	if(fh != 0){
+		for(;;){
+			if( api_fread(&c,1,fh) == 0){
+				break;
+			}
+			buf[cnt]=c;
+			if(cat_flag)api_putchar(buf[cnt]);
+			cnt++;
+		}
+	}
+	buf[cnt] = -1; //end
+
+	for (i = 0; i < 256; i++)
+		var[i] = 0;
+
+	p = &buf[0];
+	for (;;) {
+		if (p[0] == '\n') {
+			p++;
+			continue;
+		}
+		if (p[0] == -1) break;
+		if (p[1] == '=') {
+			if (p[3] == '\n') {
+				var[p[0]] = char2num(p[2], var);
+				p += 4;
+				continue;
+			}
+			if (p[3] == '+' && p[5] == '\n') {
+				var[p[0]] = char2num(p[2], var) + char2num(p[4], var);
+				p += 6;
+				continue;
+			}
+			if (p[3] == '-' && p[5] == '\n') {
+				var[p[0]] = char2num(p[2], var) - char2num(p[4], var);
+				p += 6;
+				continue;
+			}
+		}
+		if (strncmp(p,"print ",6)==0) { //p - print
+			printf("%d", var[p[6]]);
+			p += 8;
+			continue;
+		}
+		syntaxError(p);
+		return 1;
+	}
+
+	api_end();
+	return 0;
+}

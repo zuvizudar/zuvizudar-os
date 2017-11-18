@@ -1,0 +1,57 @@
+text size :   2383(0x0094F)
+data size :   1108(0x00454)
+bss  size :      0(0x00000)
+
+0x00000024 : (.text)
+0x00000024 : _printf
+0x00000053 : _check_char
+0x00000093 : _get_num
+0x00000167 : _get_var
+0x000001B8 : _syntaxError
+0x000001D7 : _skip_space
+0x00000206 : _calc
+0x00000280 : _ZuviMain
+0x00000442 : _api_putchar
+0x00000442 : (.text)
+0x0000044E : _api_putstr0
+0x0000044E : (.text)
+0x0000045C : _api_end
+0x0000045C : (.text)
+0x00000463 : _api_fopen
+0x00000463 : (.text)
+0x00000471 : _api_fread
+0x00000471 : (.text)
+0x00000487 : _api_cmdline
+0x00000487 : (.text)
+0x00000499 : __alloca
+0x00000499 : (.text)
+0x000004A1 : (.text)
+0x000004A1 : _ZuviStartup
+0x000004AA : (.text)
+0x000004E6 : _strtoul0
+0x000005B9 : (.text)
+0x000005E1 : _vsprintf
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000400 : (.data)
+0x00000430 : _var
+0x00000830 : _p
+0x00000834 : (.data)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)

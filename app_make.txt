@@ -1,0 +1,76 @@
+TOOLPATH = ../z_tools/
+INCPATH = ../z_tools/zuvizudar/
+APILIBPATH = ../apilib/
+ZUVIZUDARPATH = ../zuvizudar/
+
+MAKE     = make -r
+NASK = $(TOOLPATH)nask.exe
+CC1 = $(TOOLPATH)cc1.exe -I$(INCPATH)  -Os -Wall -quiet
+#CC1 = $(TOOLPATH)cc1.exe -I../ -I$(INCPATH) -Os -Wall -quiet
+#CC1 = $(TOOLPATH)cc1.exe  -I ../ -Os -Wall -quiet
+GAS2NASK = $(TOOLPATH)gas2nask.exe -a
+OBJ2BIM = $(TOOLPATH)obj2bim.exe
+BIN2OBJ = $(TOOLPATH)bin2obj.exe
+BIM2ZUV = $(TOOLPATH)bim2zuv
+RULEFILE = ../zuvizudar.rul
+EDIMG = $(TOOLPATH)edimg.exe
+IMGTOL = $(TOOLPATH)imgtol.com
+MAKEFONT = $(TOOLPATH)makefont.exe
+GOLIB = $(TOOLPATH)golib00.exe
+COPY = cp
+DEL = rm -f
+QEMU = /usr/bin/qemu-system-i386
+
+default :
+	$(MAKE) $(APP).zuv
+
+$(APP).bim :$(APP).obj $(APILIBPATH)apilib.lib Makefile ../app_make.txt
+	$(OBJ2BIM) @$(RULEFILE) out:$(APP).bim map:$(APP).map stack:$(STACK)\
+			$(APP).obj $(APILIBPATH)apilib.lib
+
+$(APP).zuv : $(APP).bim Makefile ../app_make.txt
+	$(BIM2ZUV) $(APP).bim $(APP).zuv $(MALLOC)
+
+zuvizudar.img : $(ZUVIZUDARPATH)ipl10.bin $(ZUVIZUDARPATH)zuvizudar.sys $(APP).zuv \
+				Makefile ../app_make.txt
+	$(EDIMG) imgin:$(TOOLPATH)fdimg0at.tek \
+		wbinimg src:ipl10.bin len:512 from:0 to:0 \
+	 	copy from:$(ZUVIZUDARPATH)zuvizudar.sys to:@: \
+		copy from: $(APP).zuv to:@:\
+		imgout:zuvizudar.img
+
+%.gas : %.c ../apilib.h Makefile ../app_make.txt
+	$(CC1) -o $*.gas $*.c
+
+%.nas : %.gas Makefile ../app_make.txt
+	$(GAS2NASK) $*.gas $*.nas
+
+%.obj: %.nas Makefile ../app_make.txt
+	$(NASK) $*.nas $*.obj $*.lst
+
+run :
+	$(MAKE) zuvizudar.img
+	$(COPY) zuvizudar.img (TOOLPATH)qemu\fdimage0.bin
+	$(QEMU) -fda zuvizudar.img 
+
+install :
+	$(MAKE) img 
+	$(IMGTOL) w a:zuvizudar.img
+
+clean:	
+	-$(DEL) *.bin
+	-$(DEL) *.lst
+	-$(DEL) *.gas
+	-$(DEL) *.obj
+	-$(DEL) *.map
+	-$(DEL) *.zuv
+	-$(DEL) *.bim
+	-$(DEL) zuvizudar.sys
+	-$(DEL) apilib.lib
+
+src_only :
+	$(MAKE) clean
+	-$(DEL) zuvizudar.img
+
+	
+			

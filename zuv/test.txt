@@ -1,0 +1,4 @@
+tetra=57
+milka=tetra*(70-tetra)
+boku=tetra+milka
+print boku

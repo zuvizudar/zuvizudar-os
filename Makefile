@@ -1,227 +1,173 @@
-TOOLPATH=z_tools/
-INCPATH=z_tools/zuvizudar/
-OBJS_BOOTPACK = bootpack.obj naskfunc.obj hankaku.obj graphic.obj dsctbl.obj int.obj fifo.obj mouse.obj keyboard.obj memory.obj sheet.obj timer.obj mtask.obj window.obj console.obj file.obj
+TOOLPATH = z_tools/
+INCPATH  = z_tools/zuvizudar/
 
 MAKE     = make -r
-NASK = $(TOOLPATH)nask.exe
-CC1 = $(TOOLPATH)cc1.exe -I $(INCPATH) -Os -Wall -quiet
-GAS2NASK = $(TOOLPATH)gas2nask.exe -a
-OBJ2BIM = $(TOOLPATH)obj2bim.exe
-BIN2OBJ = $(TOOLPATH)bin2obj.exe
-BIM2HRB = $(TOOLPATH)bim2hrb.exe
-RULEFILE = $(TOOLPATH)zuvizudar/zuvizudar.rul
-EDIMG = $(TOOLPATH)edimg.exe
-IMGTOL = $(TOOLPATH)imgtol.com
-MAKEFONT = $(TOOLPATH)makefont.exe
-GOLIB = $(TOOLPATH)golib00.exe
-COPY = cp
-DEL = rm -f
+EDIMG    = $(TOOLPATH)edimg.exe
+IMGTOL   = $(TOOLPATH)imgtol.com
+COPY     = cp
+DEL      = rm -f
 QEMU = /usr/bin/qemu-system-i386
 
+# デフォルト動作
 
 default :
-	$(MAKE) img
+	$(MAKE) zuvizudar.img
 
+# ファイル生成規則
 
-ipl10.bin : ipl10.nas Makefile
-	$(NASK) ipl10.nas ipl10.bin ipl10.lst
+zuvizudar.img : zuvizudar/ipl20.bin zuvizudar/zuvizudar.sys Makefile \
+		a/a.zuv hello3/hello3.zuv hello4/hello4.zuv hello5/hello5.zuv \
+		winhelo/winhelo.zuv winhelo2/winhelo2.zuv winhelo3/winhelo3.zuv \
+		star1/star1.zuv stars/stars.zuv stars2/stars2.zuv \
+		lines/lines.zuv walk/walk.zuv noodle/noodle.zuv \
+		beepdown/beepdown.zuv color/color.zuv color2/color2.zuv \
+		sosu/sosu.zuv sosu2/sosu2.zuv typeipl/typeipl.zuv cat/cat.zuv iroha/iroha.c\
+		zuv/zuv.zuv \
+		chklang/chklang.zuv nihongo/nihongo.fnt zuv/test.txt
 
-asmhead.bin : asmhead.nas Makefile
-	$(NASK) asmhead.nas asmhead.bin asmhead.lst
-
-hankaku.bin:hankaku.txt Makefile
-	$(MAKEFONT) hankaku.txt hankaku.bin
-
-hankaku.obj: hankaku.bin Makefile
-	$(BIN2OBJ) hankaku.bin hankaku.obj _hankaku
-
-bootpack.bim : $(OBJS_BOOTPACK) Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:bootpack.bim stack:3136k map:bootpack.map \
-		$(OBJS_BOOTPACK)
-
-bootpack.hrb : bootpack.bim Makefile
-	$(BIM2HRB) bootpack.bim bootpack.hrb 0
-
-hello.zuv :	hello.nas Makefile
-	$(NASK) hello.nas hello.zuv hello.lst
-
-hello2.zuv :	hello2.nas Makefile
-	$(NASK) hello2.nas hello2.zuv hello2.lst
-
-a.bim: a.obj a_nask.obj Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:a.bim map:a.map a.obj a_nask.obj
-
-
-a.zuv: a.bim Makefile
-	$(BIM2HRB) a.bim a.zuv 0
-
-hello3.bim: hello3.obj a_nask.obj Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:hello3.bim map:hello3.map hello3.obj a_nask.obj
-
-hello3.zuv: hello3.bim Makefile
-	$(BIM2HRB) hello3.bim hello3.zuv 0
-
-hello4.bim: hello4.obj a_nask.obj Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:hello4.bim map:hello4.map hello4.obj a_nask.obj
-
-hello4.zuv: hello4.bim Makefile
-	$(BIM2HRB) hello4.bim hello4.zuv 0
-
-hello5.bim : hello5.obj Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:hello5.bim stack:1k map:hello5.map hello5.obj
-
-hello5.zuv : hello5.bim Makefile
-	$(BIM2HRB) hello5.bim hello5.zuv 0
-
-winhelo.bim: winhelo.obj Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:winhelo.bim map:winhelo.map winhelo.obj a_nask.obj
-
-winhelo.zuv: winhelo.bim Makefile
-	$(BIM2HRB) winhelo.bim winhelo.zuv 0
-
-winhelo2.bim: winhelo2.obj Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:winhelo2.bim map:winhelo2.map winhelo2.obj a_nask.obj
-
-winhelo2.zuv: winhelo2.bim Makefile
-	$(BIM2HRB) winhelo2.bim winhelo2.zuv 0
-
-winhelo3.bim: winhelo3.obj Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:winhelo3.bim map:winhelo3.map winhelo3.obj a_nask.obj
-
-winhelo3.zuv: winhelo3.bim Makefile
-	$(BIM2HRB) winhelo3.bim winhelo3.zuv 0
-
-
-star1.bim : star1.obj a_nask.obj Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:star1.bim stack:1k map:star1.map \
-		star1.obj a_nask.obj
-
-star1.zuv : star1.bim Makefile
-	$(BIM2HRB) star1.bim star1.zuv 47k
-
-stars.bim : stars.obj a_nask.obj Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:stars.bim stack:1k map:stars.map \
-		stars.obj a_nask.obj
-
-stars.zuv : stars.bim Makefile
-	$(BIM2HRB) stars.bim stars.zuv 47k
-
-stars2.bim : stars2.obj a_nask.obj Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:stars2.bim stack:1k map:stars2.map \
-		stars2.obj a_nask.obj
-
-stars2.zuv : stars2.bim Makefile
-	$(BIM2HRB) stars2.bim stars2.zuv 47k
-
-lines.bim : lines.obj a_nask.obj Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:lines.bim stack:1k map:lines.map \
-		lines.obj a_nask.obj
-
-lines.zuv : lines.bim Makefile
-	$(BIM2HRB) lines.bim lines.zuv 48k
-
-walk.bim : walk.obj a_nask.obj Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:walk.bim stack:1k map:walk.map \
-		walk.obj a_nask.obj
-
-walk.zuv : walk.bim Makefile
-	$(BIM2HRB) walk.bim walk.zuv 48k
-
-noodle.bim : noodle.obj a_nask.obj Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:noodle.bim stack:1k map:noodle.map \
-		noodle.obj a_nask.obj
-
-noodle.zuv : noodle.bim Makefile
-	$(BIM2HRB) noodle.bim noodle.zuv 40k
-
-
-beepdown.bim : beepdown.obj a_nask.obj Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:beepdown.bim stack:1k map:beepdown.map \
-		beepdown.obj a_nask.obj
-
-beepdown.zuv : beepdown.bim Makefile
-	$(BIM2HRB) beepdown.bim beepdown.zuv 40k
-
-color.bim : color.obj a_nask.obj Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:color.bim stack:1k map:color.map \
-		color.obj a_nask.obj
-
-color.zuv : color.bim Makefile
-	$(BIM2HRB) color.bim color.zuv 56k
-
-color2.bim : color2.obj a_nask.obj Makefile
-	$(OBJ2BIM) @$(RULEFILE) out:color2.bim stack:1k map:color2.map \
-		color2.obj a_nask.obj
-
-color2.zuv : color2.bim Makefile
-	$(BIM2HRB) color2.bim color2.zuv 56k
-
-zuvizuda.sys : asmhead.bin bootpack.hrb Makefile
-	cat asmhead.bin bootpack.hrb > zuvizuda.sys
-
-zuvizuda.img : ipl10.bin zuvizuda.sys hello.zuv hello2.zuv a.zuv hello3.zuv \
-								hello4.zuv hello5.zuv  winhelo.zuv winhelo2.zuv\
-							 winhelo3.zuv star1.zuv	stars.zuv stars2.zuv lines.zuv walk.zuv noodle.zuv\
-							 beepdown.zuv color.zuv color2.zuv\
-							 Makefile
 	$(EDIMG)   imgin:z_tools/fdimg0at.tek \
-		wbinimg src:ipl10.bin len:512 from:0 to:0 \
-	 	copy from:zuvizuda.sys to:@: \
-		copy from:ipl10.nas to:@:\
-		copy from:hello.zuv to:@:\
-		copy from:hello2.zuv to:@:\
-		copy from:a.zuv to:@:\
-		copy from:hello3.zuv to:@:\
-		copy from:hello4.zuv to:@:\
-		copy from:hello5.zuv to:@:\
-		copy from:winhelo.zuv to:@:\
-		copy from:winhelo2.zuv to:@:\
-		copy from:winhelo3.zuv to:@:\
-		copy from:star1.zuv to:@:\
-		copy from:stars.zuv to:@:\
-		copy from:stars2.zuv to:@:\
-		copy from:lines.zuv to:@:\
-		copy from:walk.zuv to:@:\
-		copy from:noodle.zuv to:@:\
-		copy from:beepdown.zuv to:@:\
-		copy from:color.zuv to:@:\
-		copy from:color2.zuv to:@:\
-		imgout:zuvizuda.img
+		wbinimg src:zuvizudar/ipl20.bin len:512 from:0 to:0 \
+		copy from:zuvizudar/zuvizudar.sys to:@: \
+		copy from:zuvizudar/ipl20.nas to:@: \
+		copy from:a/a.zuv to:@: \
+		copy from:hello3/hello3.zuv to:@: \
+		copy from:hello4/hello4.zuv to:@: \
+		copy from:hello5/hello5.zuv to:@: \
+		copy from:winhelo/winhelo.zuv to:@: \
+		copy from:winhelo2/winhelo2.zuv to:@: \
+		copy from:winhelo3/winhelo3.zuv to:@: \
+		copy from:star1/star1.zuv to:@: \
+		copy from:stars/stars.zuv to:@: \
+		copy from:stars2/stars2.zuv to:@: \
+		copy from:lines/lines.zuv to:@: \
+		copy from:walk/walk.zuv to:@: \
+		copy from:noodle/noodle.zuv to:@: \
+		copy from:beepdown/beepdown.zuv to:@: \
+		copy from:color/color.zuv to:@: \
+		copy from:color2/color2.zuv to:@: \
+		copy from:sosu/sosu.zuv to:@: \
+		copy from:sosu2/sosu2.zuv to:@: \
+		copy from:typeipl/typeipl.zuv to:@: \
+		copy from:cat/cat.zuv to:@: \
+		copy from:iroha/iroha.zuv to:@: \
+		copy from:chklang/chklang.zuv to:@: \
+		copy from:zuv/zuv.zuv to:@: \
+		copy from:euc.txt to:@: \
+		copy from:zuv/test.txt to:@: \
+		copy from:nihongo/nihongo.fnt to:@: \
+		imgout:zuvizudar.img
 
-
-%.gas :%.c Makefile
-	$(CC1) -o $*.gas $*.c
-
-%.nas : %.gas Makefile
-	$(GAS2NASK) $*.gas $*.nas
-
-%.obj: %.nas Makefile
-	$(NASK) $*.nas $*.obj $*.lst
-
-
-img :
-	$(MAKE) zuvizuda.img
+# コマンド
 
 run :
-	$(MAKE) img
-	$(QEMU) -fda zuvizuda.img
+	$(MAKE) zuvizudar.img
+	$(COPY) zuvizudar.img ..\z_tools\qemu\fdimage0.bin
+	$(MAKE) -C ../z_tools/qemu
+
+install :
+	$(MAKE) zuvizudar.img
+	$(IMGTOL) w a: zuvizudar.img
+
+full :
+	$(MAKE) -C zuvizudar
+	$(MAKE) -C apilib
+	$(MAKE) -C a
+	$(MAKE) -C hello3
+	$(MAKE) -C hello4
+	$(MAKE) -C hello5
+	$(MAKE) -C winhelo
+	$(MAKE) -C winhelo2
+	$(MAKE) -C winhelo3
+	$(MAKE) -C star1
+	$(MAKE) -C stars
+	$(MAKE) -C stars2
+	$(MAKE) -C lines
+	$(MAKE) -C walk
+	$(MAKE) -C noodle
+	$(MAKE) -C beepdown
+	$(MAKE) -C color
+	$(MAKE) -C color2
+	$(MAKE) -C sosu
+	$(MAKE) -C sosu2
+	$(MAKE) -C typeipl
+	$(MAKE) -C cat
+	$(MAKE) -C iroha
+	$(MAKE) -C chklang
+	$(MAKE) -C zuv
+	$(MAKE) zuvizudar.img
+
+run_full :
+	$(MAKE) full
+	$(QEMU) -fda zuvizudar.img
+
+install_full :
+	$(MAKE) full
+	$(IMGTOL) w a: zuvizudar.img
+
+run_os :
+	$(MAKE) -C zuvizudar
+	$(MAKE) run
 
 clean :
-	-$(DEL) *.bin
-	-$(DEL) *.lst
-	-$(DEL) *.gas
-	-$(DEL) *.obj
-	-$(DEL) *.map
-	-$(DEL) *.zuv
-	-$(DEL) *.bim
-	-$(DEL) bootpack.nas
-	-$(DEL) dsctbl.nas
-	-$(DEL) graphic.nas
-	-$(DEL) bootpack.map
-	-$(DEL) bootpack.bim
-	-$(DEL) bootpack.hrb
-	-$(DEL) zuvizuda.sys
+# 何もしない
 
 src_only :
 	$(MAKE) clean
-	-$(DEL) zuvizuda.img
+	-$(DEL) zuvizudar.img
+
+clean_full :
+	$(MAKE) -C zuvizudar	clean
+	$(MAKE) -C apilib		clean
+	$(MAKE) -C a			clean
+	$(MAKE) -C hello3		clean
+	$(MAKE) -C hello4		clean
+	$(MAKE) -C hello5		clean
+	$(MAKE) -C winhelo		clean
+	$(MAKE) -C winhelo2		clean
+	$(MAKE) -C winhelo3		clean
+	$(MAKE) -C star1		clean
+	$(MAKE) -C stars		clean
+	$(MAKE) -C stars2		clean
+	$(MAKE) -C lines		clean
+	$(MAKE) -C walk			clean
+	$(MAKE) -C noodle		clean
+	$(MAKE) -C beepdown		clean
+	$(MAKE) -C color		clean
+	$(MAKE) -C color2		clean
+	$(MAKE) -C sosu			clean
+	$(MAKE) -C sosu2		clean
+	$(MAKE) -C typeipl		clean
+	$(MAKE) -C cat 			clean
+	$(MAKE) -C iroha 		clean
+	$(MAKE) -C chklang 		clean
+
+src_only_full :
+	$(MAKE) -C zuvizudar	src_only
+	$(MAKE) -C apilib		src_only
+	$(MAKE) -C a			src_only
+	$(MAKE) -C hello3		src_only
+	$(MAKE) -C hello4		src_only
+	$(MAKE) -C hello5		src_only
+	$(MAKE) -C winhelo		src_only
+	$(MAKE) -C winhelo2		src_only
+	$(MAKE) -C winhelo3		src_only
+	$(MAKE) -C star1		src_only
+	$(MAKE) -C stars		src_only
+	$(MAKE) -C stars2		src_only
+	$(MAKE) -C lines		src_only
+	$(MAKE) -C walk			src_only
+	$(MAKE) -C noodle		src_only
+	$(MAKE) -C beepdown		src_only
+	$(MAKE) -C color		src_only
+	$(MAKE) -C color2		src_only
+	$(MAKE) -C sosu			src_only
+	$(MAKE) -C sosu2		src_only
+	$(MAKE) -C typeipl		src_only
+	$(MAKE) -C cat			src_only
+	$(MAKE) -C chklang		src_only
+	-$(DEL) zuvizudar.img
+
+refresh :
+	$(MAKE) full
+	$(MAKE) clean_full
+	-$(DEL) zuvizudar.img
