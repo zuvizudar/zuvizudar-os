@@ -23,7 +23,8 @@ zuvizudar.img : zuvizudar/ipl20.bin zuvizudar/zuvizudar.sys Makefile \
 		beepdown/beepdown.zuv color/color.zuv color2/color2.zuv \
 		sosu/sosu.zuv sosu2/sosu2.zuv typeipl/typeipl.zuv cat/cat.zuv iroha/iroha.c\
 		zuv/zuv.zuv \
-		chklang/chklang.zuv nihongo/nihongo.fnt zuv/test.txt
+		chklang/chklang.zuv nihongo/nihongo.fnt zuv/test.txt \
+		chklang/chklang.zuv nihongo/nihongo.fnt 
 
 	$(EDIMG)   imgin:z_tools/fdimg0at.tek \
 		wbinimg src:zuvizudar/ipl20.bin len:512 from:0 to:0 \
@@ -54,6 +55,7 @@ zuvizudar.img : zuvizudar/ipl20.bin zuvizudar/zuvizudar.sys Makefile \
 		copy from:zuv/zuv.zuv to:@: \
 		copy from:euc.txt to:@: \
 		copy from:zuv/test.txt to:@: \
+		copy from:euc.txt to:@: \
 		copy from:nihongo/nihongo.fnt to:@: \
 		imgout:zuvizudar.img
 
@@ -62,6 +64,7 @@ zuvizudar.img : zuvizudar/ipl20.bin zuvizudar/zuvizudar.sys Makefile \
 run :
 	$(MAKE) zuvizudar.img
 	$(COPY) zuvizudar.img ..\z_tools\qemu\fdimage0.bin
+	$(COPY) zuvizudar.img z_tools\qemu\fdimage0.bin
 	$(MAKE) -C ../z_tools/qemu
 
 install :
