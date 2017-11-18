@@ -63,7 +63,7 @@ zuvizudar.img : zuvizudar/ipl20.bin zuvizudar/zuvizudar.sys Makefile \
 
 run :
 	$(MAKE) zuvizudar.img
-	$(COPY) zuvizudar.img ..\z_tools\qemu\fdimage0.bin
+	$(COPY) zuvizudar.img z_tools\qemu\fdimage0.bin
 	$(COPY) zuvizudar.img z_tools\qemu\fdimage0.bin
 	$(MAKE) -C ../z_tools/qemu
 
