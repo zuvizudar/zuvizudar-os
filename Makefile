@@ -16,49 +16,47 @@ default :
 # ファイル生成規則
 
 zuvizudar.img : kernel/ipl20.bin kernel/zuvizudar.sys Makefile \
-		a/a.zuv hello3/hello3.zuv hello4/hello4.zuv hello5/hello5.zuv \
-		winhelo/winhelo.zuv winhelo2/winhelo2.zuv winhelo3/winhelo3.zuv \
-		star1/star1.zuv stars/stars.zuv stars2/stars2.zuv \
-		lines/lines.zuv walk/walk.zuv noodle/noodle.zuv \
-		beepdown/beepdown.zuv color/color.zuv color2/color2.zuv \
-		sosu/sosu.zuv sosu2/sosu2.zuv typeipl/typeipl.zuv cat/cat.zuv iroha/iroha.c\
-		zuv/zuv.zuv \
-		chklang/chklang.zuv nihongo/nihongo.fnt zuv/test.txt \
-		chklang/chklang.zuv nihongo/nihongo.fnt sosu3/sosu3.zuv tview/tview.zuv
+		app/a/a.zuv app/hello3/hello3.zuv app/hello4/hello4.zuv app/hello5/hello5.zuv \
+		app/winhelo/winhelo.zuv app/winhelo2/winhelo2.zuv app/winhelo3/winhelo3.zuv \
+		app/star1/star1.zuv app/stars/stars.zuv app/stars2/stars2.zuv \
+		app/lines/lines.zuv app/walk/walk.zuv app/noodle/noodle.zuv \
+		app/beepdown/beepdown.zuv app/color/color.zuv app/color2/color2.zuv \
+		app/sosu/sosu.zuv app/sosu2/sosu2.zuv app/typeipl/typeipl.zuv app/cat/cat.zuv app/iroha/iroha.c\
+		app/zuv/zuv.zuv \
+		app/chklang/chklang.zuv app/nihongo/nihongo.fnt app/sosu3/sosu3.zuv app/tview/tview.zuv
 
-	$(EDIMG)   imgin:z_tools/fdimg0at.tek \
+	$(EDIMG)	imgin:z_tools/fdimg0at.tek \
 		wbinimg src:kernel/ipl20.bin len:512 from:0 to:0 \
 		copy from:kernel/zuvizudar.sys to:@: \
 		copy from:kernel/ipl20.nas to:@: \
-		copy from:a/a.zuv to:@: \
-		copy from:hello3/hello3.zuv to:@: \
-		copy from:hello4/hello4.zuv to:@: \
-		copy from:hello5/hello5.zuv to:@: \
-		copy from:winhelo/winhelo.zuv to:@: \
-		copy from:winhelo2/winhelo2.zuv to:@: \
-		copy from:winhelo3/winhelo3.zuv to:@: \
-		copy from:star1/star1.zuv to:@: \
-		copy from:stars/stars.zuv to:@: \
-		copy from:stars2/stars2.zuv to:@: \
-		copy from:lines/lines.zuv to:@: \
-		copy from:walk/walk.zuv to:@: \
-		copy from:noodle/noodle.zuv to:@: \
-		copy from:beepdown/beepdown.zuv to:@: \
-		copy from:color/color.zuv to:@: \
-		copy from:color2/color2.zuv to:@: \
-		copy from:sosu/sosu.zuv to:@: \
-		copy from:sosu2/sosu2.zuv to:@: \
-		copy from:typeipl/typeipl.zuv to:@: \
-		copy from:cat/cat.zuv to:@: \
-		copy from:iroha/iroha.zuv to:@: \
-		copy from:chklang/chklang.zuv to:@: \
-		copy from:zuv/zuv.zuv to:@: \
+		copy from:app/a/a.zuv to:@: \
+		copy from:app/hello3/hello3.zuv to:@: \
+		copy from:app/hello4/hello4.zuv to:@: \
+		copy from:app/hello5/hello5.zuv to:@: \
+		copy from:app/winhelo/winhelo.zuv to:@: \
+		copy from:app/winhelo2/winhelo2.zuv to:@: \
+		copy from:app/winhelo3/winhelo3.zuv to:@: \
+		copy from:app/star1/star1.zuv to:@: \
+		copy from:app/stars/stars.zuv to:@: \
+		copy from:app/stars2/stars2.zuv to:@: \
+		copy from:app/lines/lines.zuv to:@: \
+		copy from:app/walk/walk.zuv to:@: \
+		copy from:app/noodle/noodle.zuv to:@: \
+		copy from:app/beepdown/beepdown.zuv to:@: \
+		copy from:app/color/color.zuv to:@: \
+		copy from:app/color2/color2.zuv to:@: \
+		copy from:app/sosu/sosu.zuv to:@: \
+		copy from:app/sosu2/sosu2.zuv to:@: \
+		copy from:app/typeipl/typeipl.zuv to:@: \
+		copy from:app/cat/cat.zuv to:@: \
+		copy from:app/iroha/iroha.zuv to:@: \
+		copy from:app/chklang/chklang.zuv to:@: \
+		copy from:app/zuv/zuv.zuv to:@: \
 		copy from:euc.txt to:@: \
-		copy from:zuv/test.txt to:@: \
-		copy from:euc.txt to:@: \
-		copy from:nihongo/nihongo.fnt to:@: \
-		copy from:sosu3/sosu3.zuv to:@: \
-		copy from:tview/tview.zuv to:@: \
+		copy from:app/zuv/test.txt to:@: \
+		copy from:app/nihongo/nihongo.fnt to:@: \
+		copy from:app/sosu3/sosu3.zuv to:@: \
+		copy from:app/tview/tview.zuv to:@: \
 		imgout:zuvizudar.img
 
 # コマンド
@@ -76,31 +74,31 @@ install :
 full :
 	$(MAKE) -C kernel
 	$(MAKE) -C apilib
-	$(MAKE) -C a
-	$(MAKE) -C hello3
-	$(MAKE) -C hello4
-	$(MAKE) -C hello5
-	$(MAKE) -C winhelo
-	$(MAKE) -C winhelo2
-	$(MAKE) -C winhelo3
-	$(MAKE) -C star1
-	$(MAKE) -C stars
-	$(MAKE) -C stars2
-	$(MAKE) -C lines
-	$(MAKE) -C walk
-	$(MAKE) -C noodle
-	$(MAKE) -C beepdown
-	$(MAKE) -C color
-	$(MAKE) -C color2
-	$(MAKE) -C sosu
-	$(MAKE) -C sosu2
-	$(MAKE) -C typeipl
-	$(MAKE) -C cat
-	$(MAKE) -C iroha
-	$(MAKE) -C chklang
-	$(MAKE) -C zuv
-	$(MAKE) -C sosu3
-	$(MAKE) -C tview
+	$(MAKE) -C app/a
+	$(MAKE) -C app/hello3
+	$(MAKE) -C app/hello4
+	$(MAKE) -C app/hello5
+	$(MAKE) -C app/winhelo
+	$(MAKE) -C app/winhelo2
+	$(MAKE) -C app/winhelo3
+	$(MAKE) -C app/star1
+	$(MAKE) -C app/stars
+	$(MAKE) -C app/stars2
+	$(MAKE) -C app/lines
+	$(MAKE) -C app/walk
+	$(MAKE) -C app/noodle
+	$(MAKE) -C app/beepdown
+	$(MAKE) -C app/color
+	$(MAKE) -C app/color2
+	$(MAKE) -C app/sosu
+	$(MAKE) -C app/sosu2
+	$(MAKE) -C app/typeipl
+	$(MAKE) -C app/cat
+	$(MAKE) -C app/iroha
+	$(MAKE) -C app/chklang
+	$(MAKE) -C app/zuv
+	$(MAKE) -C app/sosu3
+	$(MAKE) -C app/tview
 	$(MAKE) zuvizudar.img
 
 run_full :
@@ -125,30 +123,30 @@ src_only :
 clean_full :
 	$(MAKE) -C kernel 		clean
 	$(MAKE) -C apilib		clean
-	$(MAKE) -C a			clean
-	$(MAKE) -C hello3		clean
-	$(MAKE) -C hello4		clean
-	$(MAKE) -C hello5		clean
-	$(MAKE) -C winhelo		clean
-	$(MAKE) -C winhelo2		clean
-	$(MAKE) -C winhelo3		clean
-	$(MAKE) -C star1		clean
-	$(MAKE) -C stars		clean
-	$(MAKE) -C stars2		clean
-	$(MAKE) -C lines		clean
-	$(MAKE) -C walk			clean
-	$(MAKE) -C noodle		clean
-	$(MAKE) -C beepdown		clean
-	$(MAKE) -C color		clean
-	$(MAKE) -C color2		clean
-	$(MAKE) -C sosu			clean
-	$(MAKE) -C sosu2		clean
-	$(MAKE) -C typeipl		clean
-	$(MAKE) -C cat 			clean
-	$(MAKE) -C iroha 		clean
-	$(MAKE) -C chklang 		clean
-	$(MAKE) -C zuv  		clean
-	$(MAKE) -C tview  		clean
+	$(MAKE) -C app/a			clean
+	$(MAKE) -C app/hello3		clean
+	$(MAKE) -C app/hello4		clean
+	$(MAKE) -C app/hello5		clean
+	$(MAKE) -C app/winhelo		clean
+	$(MAKE) -C app/winhelo2		clean
+	$(MAKE) -C app/winhelo3		clean
+	$(MAKE) -C app/star1		clean
+	$(MAKE) -C app/stars		clean
+	$(MAKE) -C app/stars2		clean
+	$(MAKE) -C app/lines		clean
+	$(MAKE) -C app/walk			clean
+	$(MAKE) -C app/noodle		clean
+	$(MAKE) -C app/beepdown		clean
+	$(MAKE) -C app/color		clean
+	$(MAKE) -C app/color2		clean
+	$(MAKE) -C app/sosu			clean
+	$(MAKE) -C app/sosu2		clean
+	$(MAKE) -C app/typeipl		clean
+	$(MAKE) -C app/cat 			clean
+	$(MAKE) -C app/iroha 		clean
+	$(MAKE) -C app/chklang 		clean
+	$(MAKE) -C app/zuv  		clean
+	$(MAKE) -C app/tview  		clean
 
 src_only_full :
 	$(MAKE) -C kernel		src_only
