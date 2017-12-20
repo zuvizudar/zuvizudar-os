@@ -12,6 +12,72 @@ int calc();
 void skip_space();
 int get_var();
 
+int ZuviMain(void){
+	int i;
+	char buf[10000];
+	int fh;
+	char c,cmdline[30];
+	int cat_flag=0;
+
+	api_cmdline(cmdline,30);
+	for(p = cmdline;*p>' ';p++){ }
+	skip_space();
+	if(*p=='-'){
+		p++;
+		if(*p=='s'){
+			cat_flag=1;
+		}
+		p++;
+		skip_space();
+	}
+	fh = api_fopen(p);
+	int cnt=0;
+	if(fh != 0){
+		for(;;){
+			if( api_fread(&c,1,fh) == 0){
+				break;
+			}
+			buf[cnt]=c;
+			if(cat_flag)api_putchar(buf[cnt]);
+			cnt++;
+		}
+	}
+	buf[cnt] = -1; //end
+
+	for (i = 0; i < 256; i++)
+		var[i] = 0;
+
+	p = &buf[0];
+	for (;;) {
+		skip_space();
+		if (p[0] == -1) break; //end
+		if (p[0] == '\n') {
+			p++;
+			continue;
+		}
+		if (strncmp(p,"print",5)==0&&(p[5]==' '||p[5]=='\t')) {
+			p+=6;
+			printf("%d", calc());
+			skip_space();
+			if(p[0]!='\n')syntaxError(4);
+			continue;
+		}
+		int l=get_var();
+		skip_space();
+		if (p[0] == '=') {
+			p++;
+			var[l]=calc();
+			skip_space();
+			if(p[0]!='\n'){
+				syntaxError(5);
+			}
+			continue;
+		}
+		syntaxError(6);
+	}
+	api_end();
+	return 0;
+}
 int printf(char *format, ...){
 	va_list ap;
 	char s[1000];
@@ -118,69 +184,4 @@ int calc(){
 	return l;
 }
 
-int ZuviMain(void){
-	int i;
-	char buf[10000];
-	int fh;
-	char c,cmdline[30];
-	int cat_flag=0;
 
-	api_cmdline(cmdline,30);
-	for(p = cmdline;*p>' ';p++){ }
-	skip_space();
-	if(*p=='-'){
-		p++;
-		if(*p=='s'){
-			cat_flag=1;
-		}
-		p++;
-		skip_space();
-	}
-	fh = api_fopen(p);
-	int cnt=0;
-	if(fh != 0){
-		for(;;){
-			if( api_fread(&c,1,fh) == 0){
-				break;
-			}
-			buf[cnt]=c;
-			if(cat_flag)api_putchar(buf[cnt]);
-			cnt++;
-		}
-	}
-	buf[cnt] = -1; //end
-
-	for (i = 0; i < 256; i++)
-		var[i] = 0;
-
-	p = &buf[0];
-	for (;;) {
-		skip_space();
-		if (p[0] == -1) break; //end
-		if (p[0] == '\n') {
-			p++;
-			continue;
-		}
-		if (strncmp(p,"print",5)==0&&(p[5]==' '||p[5]=='\t')) {
-			p+=6;
-			printf("%d", calc());
-			skip_space();
-			if(p[0]!='\n')syntaxError(4);
-			continue;
-		}
-		int l=get_var();
-		skip_space();
-		if (p[0] == '=') {
-			p++;
-			var[l]=calc();
-			skip_space();
-			if(p[0]!='\n'){
-				syntaxError(5);
-			}
-			continue;
-		}
-		syntaxError(6);
-	}
-	api_end();
-	return 0;
-}

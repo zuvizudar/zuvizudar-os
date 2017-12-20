@@ -247,11 +247,15 @@ typedef struct {
 }TSS32;
 
 typedef struct _CONSOLE CONSOLE;
-
+typedef struct _FILEINFO FILEINFO;
 typedef struct{
 	char *buf;
 	int size;
+	int bsize;
 	int pos;
+	int bpos;
+	int clustno;
+	FILEINFO *finfo;
 }FILEHANDLE;
 
 struct _TASK{
@@ -322,16 +326,24 @@ int *inthandler0c(int *esp);
 void zuv_api_linewin(SHEET *sht,int x0,int y0,int x1,int y1,int col);
 
 //file
-typedef struct{
+struct _FILEINFO{
 	unsigned char name[8], ext[3], type;
 	char reserve[10];
 	unsigned short time, date, clustno;
 	unsigned int size;
-}FILEINFO;
+};
 
 void file_readfat(int *fat, unsigned char *img);
 void file_loadfile(int clustno, int size, char *buf, int *fat, char *img);
 FILEINFO *file_search(char *name,FILEINFO *finfo,int max);
+
+char *file_loadfile2(int clustno, int *psize, int *fat);
+int file_searchfat(int *fat);
+int file_savefile(FILEHANDLE *fh, int size, int *fat, char *img);
+int file_skipfile(FILEHANDLE *fh, int size, int *fat, char *img);
+void file_time(FILEINFO *finfo);
+FILEINFO *file_insert(char *name,FILEINFO *finfo, int max, int *fat);
+
 
 //bootpack
 TASK *open_constask(SHEET *sht, unsigned int memtotal);

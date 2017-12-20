@@ -24,7 +24,7 @@ zuvizudar.img : zuvizudar/ipl20.bin zuvizudar/zuvizudar.sys Makefile \
 		sosu/sosu.zuv sosu2/sosu2.zuv typeipl/typeipl.zuv cat/cat.zuv iroha/iroha.c\
 		zuv/zuv.zuv \
 		chklang/chklang.zuv nihongo/nihongo.fnt zuv/test.txt \
-		chklang/chklang.zuv nihongo/nihongo.fnt 
+		chklang/chklang.zuv nihongo/nihongo.fnt sosu3/sosu3.zuv tview/tview.zuv
 
 	$(EDIMG)   imgin:z_tools/fdimg0at.tek \
 		wbinimg src:zuvizudar/ipl20.bin len:512 from:0 to:0 \
@@ -57,6 +57,8 @@ zuvizudar.img : zuvizudar/ipl20.bin zuvizudar/zuvizudar.sys Makefile \
 		copy from:zuv/test.txt to:@: \
 		copy from:euc.txt to:@: \
 		copy from:nihongo/nihongo.fnt to:@: \
+		copy from:sosu3/sosu3.zuv to:@: \
+		copy from:tview/tview.zuv to:@: \
 		imgout:zuvizudar.img
 
 # コマンド
@@ -97,6 +99,8 @@ full :
 	$(MAKE) -C iroha
 	$(MAKE) -C chklang
 	$(MAKE) -C zuv
+	$(MAKE) -C sosu3
+	$(MAKE) -C tview
 	$(MAKE) zuvizudar.img
 
 run_full :
@@ -143,6 +147,8 @@ clean_full :
 	$(MAKE) -C cat 			clean
 	$(MAKE) -C iroha 		clean
 	$(MAKE) -C chklang 		clean
+	$(MAKE) -C zuv  		clean
+	$(MAKE) -C tview  		clean
 
 src_only_full :
 	$(MAKE) -C zuvizudar	src_only

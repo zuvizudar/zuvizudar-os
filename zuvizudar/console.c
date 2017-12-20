@@ -1,6 +1,8 @@
 #include "bootpack.h"
 #include<stdio.h>
 #include<string.h>
+unsigned char t[7];
+CONSOLE *tcons;
 
 void console_task(SHEET *sheet,int memtotal){
 	TASK *task = task_now();
@@ -632,6 +634,71 @@ int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 	else if( edx ==27 ){
 		reg[7]=task->langmode;
 	}
+	 else if (edx == 28) {
+		int mode = eax;
+		for (i = 0; i < 8; i++) {
+			if (task->fhandle[i].buf == 0) {
+				break;
+			}
+		}
+		fh = &task->fhandle[i];
+		reg[7] = 0;
+		if (i < 8) {
+			fh->bsize   = 4096;
+			fh->pos     = 0;
+			fh->bpos    = 0;
+			fh->clustno = 0;
+			fh->buf     = (char *) memman_alloc_4k(memman, fh->bsize);
+			finfo = file_search((char *) ebx + ds_base,
+					(FILEINFO *) (ADR_DISKIMG + 0x002600), 224);
+			if (finfo != 0) {
+				fh->finfo = finfo;
+				if ((mode & 0x000f) != 0) {
+					file_skipfile(fh, finfo->size, task->fat, (char *) (ADR_DISKIMG + 0x003e00));
+				} else {
+					finfo->size = 0;
+				}
+			} else {
+				finfo = file_insert((char *) ebx + ds_base,
+						(FILEINFO *) (ADR_DISKIMG + 0x002600), 224, task->fat);
+				fh->finfo = finfo;
+			}
+			if (finfo != 0) {
+				reg[7]   = (int) fh;
+				fh->size = finfo->size;
+			}
+		}
+	} else if (edx == 29) {
+		fh = (FILEHANDLE *) eax;
+		if (fh->bpos != 0) {
+			file_savefile(fh, fh->bpos, task->fat, (char *) (ADR_DISKIMG + 0x003e00));
+		}
+		memman_free_4k(memman, (int) fh->buf, fh->bsize);
+		fh->buf = 0;
+	} else if (edx == 30) {
+		int size = ecx, dsize, wsize = 0, usize = 4096;
+		char *sbuf = (char *) ebx + ds_base;
+		fh = (FILEHANDLE *) eax;
+		for (; usize == 4096;) {
+			if (fh->bpos + size < 4096) {
+				memcpy(fh->buf + fh->bpos, sbuf, size);
+				fh->pos  += size;
+				fh->bpos += size;
+				wsize    += size;
+				break;
+			}
+			dsize = 4096 - fh->bpos;
+			memcpy(fh->buf + fh->bpos, sbuf, dsize);
+			usize = file_savefile(fh, 4096, task->fat, (char *) (ADR_DISKIMG + 0x003e00));
+			size     -= dsize;
+			sbuf     += dsize;
+			fh->pos  += dsize;
+			wsize    += (usize - fh->bpos);
+			fh->bpos  = 0;
+		}
+		reg[7] = wsize;
+	}
+
 	return 0;
 }
 
