@@ -6,7 +6,7 @@ OBJS_API =	api001.obj api002.obj api003.obj api004.obj api005.obj api006.obj \
 			alloca.obj
 
 TOOLPATH=../z_tools/
-INCPATH=../z_tools/zuvizudar/
+INCPATH=../z_tools/include/
 
 MAKE     = make -r
 NASK = $(TOOLPATH)nask.exe

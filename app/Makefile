@@ -1,5 +1,5 @@
 TOOLPATH = z_tools/
-INCPATH  = z_tools/include/
+INCPATH  = z_tools/zuvizudar/
 
 MAKE     = make -r
 EDIMG    = $(TOOLPATH)edimg.exe
@@ -15,8 +15,7 @@ default :
 
 # ファイル生成規則
 
-zuvizudar.img : kernel/ipl20.bin kernel/zuvizudar.sys Makefile \
-		a/a.zuv hello3/hello3.zuv hello4/hello4.zuv hello5/hello5.zuv \
+app.bin :a/a.zuv hello3/hello3.zuv hello4/hello4.zuv hello5/hello5.zuv \
 		winhelo/winhelo.zuv winhelo2/winhelo2.zuv winhelo3/winhelo3.zuv \
 		star1/star1.zuv stars/stars.zuv stars2/stars2.zuv \
 		lines/lines.zuv walk/walk.zuv noodle/noodle.zuv \
@@ -25,11 +24,9 @@ zuvizudar.img : kernel/ipl20.bin kernel/zuvizudar.sys Makefile \
 		zuv/zuv.zuv \
 		chklang/chklang.zuv nihongo/nihongo.fnt zuv/test.txt \
 		chklang/chklang.zuv nihongo/nihongo.fnt sosu3/sosu3.zuv tview/tview.zuv
-
-	$(EDIMG)   imgin:z_tools/fdimg0at.tek \
-		wbinimg src:kernel/ipl20.bin len:512 from:0 to:0 \
-		copy from:kernel/zuvizudar.sys to:@: \
-		copy from:kernel/ipl20.nas to:@: \
+	$(EDIMG)
+		copy from:zuvizudar/zuvizudar.sys to:@: \
+		copy from:zuvizudar/ipl20.nas to:@: \
 		copy from:a/a.zuv to:@: \
 		copy from:hello3/hello3.zuv to:@: \
 		copy from:hello4/hello4.zuv to:@: \
@@ -61,21 +58,8 @@ zuvizudar.img : kernel/ipl20.bin kernel/zuvizudar.sys Makefile \
 		copy from:tview/tview.zuv to:@: \
 		imgout:zuvizudar.img
 
-# コマンド
-
-run :
-	$(MAKE) zuvizudar.img
-	$(COPY) zuvizudar.img z_tools\qemu\fdimage0.bin
-	$(COPY) zuvizudar.img z_tools\qemu\fdimage0.bin
-	$(MAKE) -C ../z_tools/qemu
-
-install :
-	$(MAKE) zuvizudar.img
-	$(IMGTOL) w a: zuvizudar.img
 
 full :
-	$(MAKE) -C kernel
-	$(MAKE) -C apilib
 	$(MAKE) -C a
 	$(MAKE) -C hello3
 	$(MAKE) -C hello4
@@ -105,26 +89,11 @@ full :
 
 run_full :
 	$(MAKE) full
-	$(QEMU) -fda zuvizudar.img
 
 install_full :
 	$(MAKE) full
-	$(IMGTOL) w a: zuvizudar.img
-
-run_os :
-	$(MAKE) -C kernel
-	$(MAKE) run
-
-clean :
-# 何もしない
-
-src_only :
-	$(MAKE) clean
-	-$(DEL) zuvizudar.img
 
 clean_full :
-	$(MAKE) -C kernel 		clean
-	$(MAKE) -C apilib		clean
 	$(MAKE) -C a			clean
 	$(MAKE) -C hello3		clean
 	$(MAKE) -C hello4		clean
@@ -151,8 +120,6 @@ clean_full :
 	$(MAKE) -C tview  		clean
 
 src_only_full :
-	$(MAKE) -C kernel		src_only
-	$(MAKE) -C apilib		src_only
 	$(MAKE) -C a			src_only
 	$(MAKE) -C hello3		src_only
 	$(MAKE) -C hello4		src_only

@@ -1,7 +1,7 @@
 TOOLPATH = ../z_tools/
-INCPATH = ../z_tools/zuvizudar/
+INCPATH = ../z_tools/include/
 APILIBPATH = ../apilib/
-ZUVIZUDARPATH = ../zuvizudar/
+ZUVIZUDARPATH = ../kernel/
 
 MAKE     = make -r
 NASK = $(TOOLPATH)nask.exe
