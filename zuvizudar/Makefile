@@ -39,11 +39,11 @@ bootpack.bim : $(OBJS_BOOTPACK) Makefile
 	$(OBJ2BIM) @$(RULEFILE) out:bootpack.bim stack:3136k map:bootpack.map \
 		$(OBJS_BOOTPACK)
 
-bootpack.hrb : bootpack.bim Makefile
-	$(BIM2ZUV) bootpack.bim bootpack.hrb 0
+bootpack.zuv : bootpack.bim Makefile
+	$(BIM2ZUV) bootpack.bim bootpack.zuv 0
 
-zuvizudar.sys : asmhead.bin bootpack.hrb Makefile
-	cat asmhead.bin bootpack.hrb > zuvizudar.sys
+zuvizudar.sys : asmhead.bin bootpack.zuv Makefile
+	cat asmhead.bin bootpack.zuv > zuvizudar.sys
 
 %.gas :%.c Makefile
 	$(CC1) -o $*.gas $*.c
@@ -62,7 +62,6 @@ clean:
 	-$(DEL) *.map
 	-$(DEL) *.bim
 	-$(DEL) *.zuv
-	-$(DEL) *.hrb
 
 src_only:
 	$(MAKE) clean

@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 
     /* パラメータの取得 */
     if (argc < 4) {
-        puts("usage>bim2hrb appname.bim appname.hrb heap-size [mmarea-size]");
+        puts("usage>bim2zuv appname.bim appname.zuv heap-size [mmarea-size]");
         return 1;
     }
     heap_siz = getnum(argv[3]);
@@ -73,14 +73,14 @@ err_form:
     /* ファイル書き込み */
     fp = fopen(argv[2], "wb");
     if (fp == 0) {
-err_hrb:
-        puts("hrb file write error");
+err_zuv:
+        puts("zuv file write error");
         return 1;
     }
     i = fwrite(fbuf, 1, fsiz, fp);
     fclose(fp);
     if (fsiz != i) {
-        goto err_hrb;
+        goto err_zuv;
     }
     return 0;
 }

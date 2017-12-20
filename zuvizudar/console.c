@@ -347,7 +347,7 @@ int cmd_app(CONSOLE *cons, int *fat,char *cmdline){
 	FILEINFO *finfo;
 	char *p,name[18],*q;
 	TASK *task=task_now();
-	int i,segsiz,datsiz,esp,dathrb;
+	int i,segsiz,datsiz,esp,datzuv;
 	SHTCTL *shtctl;
 	SHEET *sht;
 	for(i=0;i<13;i++){
@@ -373,14 +373,14 @@ int cmd_app(CONSOLE *cons, int *fat,char *cmdline){
 			segsiz = *((int *) (p + 0x0000));
 			esp    = *((int *) (p + 0x000c));
 			datsiz = *((int *) (p + 0x0010));
-			dathrb = *((int *) (p + 0x0014));
+			datzuv = *((int *) (p + 0x0014));
 			q = (char *) memman_alloc_4k(memman, segsiz);
 			//*((int *) 0xfe8) = (int) q;
 			task->ds_base =(int)q;
 			set_segmdesc(task->ldt + 0, finfo->size - 1, (int) p, AR_CODE32_ER + 0x60);
 			set_segmdesc(task->ldt + 1, segsiz - 1,      (int) q, AR_DATA32_RW + 0x60);
 			for (i = 0; i < datsiz; i++) {
-				q[esp + i] = p[dathrb + i];
+				q[esp + i] = p[datzuv + i];
 			}
 			start_app(0x1b, 0*8+4, esp,1*8+4, &(task->tss.esp0));
 			shtctl = (SHTCTL *) *((int *) 0x0fe4);
