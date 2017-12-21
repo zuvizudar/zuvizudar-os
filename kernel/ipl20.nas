@@ -28,8 +28,6 @@ CYLS	EQU		20
 		DB		"FAT12   "
 		RESB	18
 
-
-
 entry:
 		MOV		AX,0
 		MOV		SS,AX

@@ -3,15 +3,15 @@
 [BITS 32]
 [FILE "api028.nas"]
 
-		GLOBAL	_api_fopenEx
+		GLOBAL	_api_fopen_w
 
 [SECTION .text]
 
-_api_fopenEx:		; int api_fopenEx(char *fname, int mode);
+_api_fopen_w:		; int api_fopen_w(char *fname, int mode);
 		PUSH	EBX
 		MOV		EDX,28
-		MOV		EBX,[ESP+8]			; fname
-		MOV		EAX,[ESP+12]		; mode
+		MOV		EBX,[ESP+8]	
+		MOV		EAX,[ESP+12]
 		INT		0x40
 		POP		EBX
 		RET

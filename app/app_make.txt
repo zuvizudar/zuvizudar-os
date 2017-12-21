@@ -39,7 +39,7 @@ zuvizudar.img : $(ZUVIZUDARPATH)ipl10.bin $(ZUVIZUDARPATH)zuvizudar.sys $(APP).z
 		copy from: $(APP).zuv to:@:\
 		imgout:zuvizudar.img
 
-%.gas : %.c ../../apilib.h Makefile ../app_make.txt
+%.gas : %.c $(INCPATH)apilib.h Makefile ../app_make.txt
 	$(CC1) -o $*.gas $*.c
 
 %.nas : %.gas Makefile ../app_make.txt

@@ -55,6 +55,11 @@ int ZuviMain(void){
 			p++;
 			continue;
 		}
+		if(strncmp(p,"end",3)==0){
+			//syntaxError(7);
+			break;
+		}
+
 		if (strncmp(p,"print",5)==0&&(p[5]==' '||p[5]=='\t')) {
 			p+=6;
 			printf("%d", calc());

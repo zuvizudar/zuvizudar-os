@@ -23,7 +23,8 @@ zuvizudar.img : kernel/ipl20.bin kernel/zuvizudar.sys Makefile \
 		app/beepdown/beepdown.zuv app/color/color.zuv app/color2/color2.zuv \
 		app/sosu/sosu.zuv app/sosu2/sosu2.zuv app/typeipl/typeipl.zuv app/cat/cat.zuv app/iroha/iroha.c\
 		app/zuv/zuv.zuv \
-		app/chklang/chklang.zuv app/nihongo/nihongo.fnt app/sosu3/sosu3.zuv app/tview/tview.zuv
+		app/chklang/chklang.zuv app/nihongo/nihongo.fnt app/tview/tview.zuv\
+		app/vim/vim.zuv
 
 	$(EDIMG)	imgin:z_tools/fdimg0at.tek \
 		wbinimg src:kernel/ipl20.bin len:512 from:0 to:0 \
@@ -52,11 +53,11 @@ zuvizudar.img : kernel/ipl20.bin kernel/zuvizudar.sys Makefile \
 		copy from:app/iroha/iroha.zuv to:@: \
 		copy from:app/chklang/chklang.zuv to:@: \
 		copy from:app/zuv/zuv.zuv to:@: \
-		copy from:euc.txt to:@: \
+		copy from:data/euc.txt to:@: \
 		copy from:app/zuv/test.txt to:@: \
 		copy from:app/nihongo/nihongo.fnt to:@: \
-		copy from:app/sosu3/sosu3.zuv to:@: \
 		copy from:app/tview/tview.zuv to:@: \
+		copy from:app/vim/vim.zuv to:@: \
 		imgout:zuvizudar.img
 
 # コマンド
@@ -97,8 +98,8 @@ full :
 	$(MAKE) -C app/iroha
 	$(MAKE) -C app/chklang
 	$(MAKE) -C app/zuv
-	$(MAKE) -C app/sosu3
 	$(MAKE) -C app/tview
+	$(MAKE) -C app/vim
 	$(MAKE) zuvizudar.img
 
 run_full :
@@ -147,6 +148,7 @@ clean_full :
 	$(MAKE) -C app/chklang 		clean
 	$(MAKE) -C app/zuv  		clean
 	$(MAKE) -C app/tview  		clean
+	$(MAKE) -C app/vim  		clean
 
 src_only_full :
 	$(MAKE) -C kernel		src_only

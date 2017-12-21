@@ -420,19 +420,19 @@ int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 	FILEINFO *finfo;
 	FILEHANDLE *fh;
 	MEMMAN *memman = (MEMMAN*) MEMMAN_ADDR;
-	if (edx == 1) {
+	if (edx == 1) { //a char 
 		cons_putchar(cons, eax & 0xff, 1);
 	}
- 	else if (edx == 2) {
+ 	else if (edx == 2) { // str0
 		cons_putstr0(cons, (char *) ebx+ds_base);
 	}
- 	else if (edx == 3) {
+ 	else if (edx == 3) { // str1(pos,num)
 		cons_putstr1(cons, (char *) ebx+ds_base, ecx);
 	}
-	else if (edx == 4){
+	else if (edx == 4){ //end
 		return &(task->tss.esp0);
 	}
-	else if (edx == 5 ){
+	else if (edx == 5 ){ //openwin
 		sht = sheet_alloc(shtctl);
 		sht->task=task;
 		sht->flags |= 0x10;
@@ -442,55 +442,55 @@ int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 		sheet_updown(sht, shtctl->top);	
 		reg[7] = (int) sht;
 	}
-	else if (edx == 6){
+	else if (edx == 6){ // putstrwin
 		sht = (SHEET *)(ebx & 0xfffffffe);
 		putfonts8_asc(sht->buf,sht->bxsize,esi,edi,eax,(char *)ebp+ds_base);
 		if((ebx &1)==0){
 			sheet_refresh(sht,esi,edi,esi+ecx*8,edi+16);
 		}
 	}
-	else if (edx == 7){
+	else if (edx == 7){ //boxfilwin
 		sht = (SHEET *)(ebx & 0xfffffffe);
 		boxfill8(sht->buf,sht->bxsize,ebp,eax,ecx,esi,edi);
 		if((ebx & 1)==0){
 			sheet_refresh(sht,eax,ecx,esi+1,edi+1);
 		}
 	}
-	else if (edx == 8) {
+	else if (edx == 8) { //initmalloc
 		memman_init(( MEMMAN *) (ebx + ds_base));
 		ecx &= 0xfffffff0;
 		memman_free(( MEMMAN *) (ebx + ds_base), eax, ecx);
 	}
-	else if (edx == 9) {
+	else if (edx == 9) { //malloc
 		ecx = (ecx + 0x0f) & 0xfffffff0;
 		reg[7] = memman_alloc((MEMMAN *) (ebx + ds_base), ecx);
 	}
-	else if (edx == 10) {
+	else if (edx == 10) { //free
 		ecx = (ecx + 0x0f) & 0xfffffff0; 
 		memman_free((MEMMAN *) (ebx + ds_base), eax, ecx);
 	}
-	else if (edx == 11){
+	else if (edx == 11){ //point
 		sht = (SHEET*) (ebx & 0xfffffffe);
 		sht->buf[sht->bxsize*edi+esi] =eax;
 		if((ebx & 1)==0){
 			sheet_refresh(sht,esi,edi,esi+1,edi+1);
 		}
 	}
-	else if (edx == 12){
+	else if (edx == 12){ //refreshwin
 		sht = (SHEET *)ebx;
 		sheet_refresh(sht,eax,ecx,esi,edi);
 	}
-	else if (edx ==13){
+	else if (edx ==13){ //linewin
 		sht = (SHEET *) (ebx & 0xfffffffe);
 		zuv_api_linewin(sht, eax, ecx, esi, edi, ebp);
 		if ((ebx & 1) == 0) {
 			sheet_refresh(sht, eax, ecx, esi + 1, edi + 1);
 		}
 	}
-	else if(edx ==14){
+	else if(edx ==14){ //closewin
 		sheet_free((SHEET *)ebx);
 	}
-	else if (edx == 15){
+	else if (edx == 15){ //getkey
 		for (;;) {
 			io_cli();
 			if (fifo32_status(&task->fifo) == 0) {
@@ -528,20 +528,20 @@ int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			}
 		}
 	}
-	else if (edx == 16){
+	else if (edx == 16){ //alloctimer
 		reg[7] =(int) timer_alloc();
 		((TIMER *)reg[7])->flags2 =1;
 	}
-	else if (edx ==17){
+	else if (edx ==17){ //inittimer
 		timer_init((TIMER *)ebx,&task->fifo,eax+256);
 	}
-	else if (edx ==18){
+	else if (edx ==18){ //settimer
 		timer_settime((TIMER *)ebx,eax);
 	}
-	else if (edx ==19){
+	else if (edx ==19){ //freetimer
 		timer_free((TIMER *)ebx);
 	}
-	else if (edx == 20){
+	else if (edx == 20){ //beep
 		if(eax == 0){
 			i = io_in8(0x61);
 			io_out8(0x61,i & 0x0d);
@@ -555,7 +555,7 @@ int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			io_out8(0x61, (i | 0x03)& 0x0f);
 		}
 	}
-	else if (edx == 21) {
+	else if (edx == 21) { //fopen
 		for (i = 0; i < 8; i++) {
 			if (task->fhandle[i].buf == 0) {
 				break;
@@ -575,12 +575,12 @@ int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			}
 		}
 	}
-	else if (edx == 22) {
+	else if (edx == 22) { //fclose
 		fh = (FILEHANDLE *) eax;
 		memman_free_4k(memman, (int) fh->buf, fh->size);
 		fh->buf = 0;
 	}
-	else if (edx == 23) {
+	else if (edx == 23) { //fseek
 		fh = (FILEHANDLE *) eax;
 		if (ecx == 0) {
 			fh->pos = ebx;
@@ -596,7 +596,7 @@ int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			fh->pos = fh->size;
 		}
 	}
-	else if (edx == 24) {
+	else if (edx == 24) { //fsize
 		fh = (FILEHANDLE *) eax;
 		if (ecx == 0) {
 			reg[7] = fh->size;
@@ -606,7 +606,7 @@ int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			reg[7] = fh->pos - fh->size;
 		}
 	}
-	else if (edx == 25) {
+	else if (edx == 25) { //fread
 		fh = (FILEHANDLE *) eax;
 		for (i = 0; i < ecx; i++) {
 			if (fh->pos == fh->size) {
@@ -617,7 +617,7 @@ int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 		}
 		reg[7] = i;
 	}
-	else if (edx == 26) {
+	else if (edx == 26) { //cmdline
 		i = 0;
 		for (;;) {
 			*((char *) ebx + ds_base + i) =  task->cmdline[i];
@@ -631,10 +631,10 @@ int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 		}
 		reg[7] = i;
 	}
-	else if( edx ==27 ){
+	else if( edx ==27 ){ //getline
 		reg[7]=task->langmode;
 	}
-	 else if (edx == 28) {
+	 else if (edx == 28) { //fopne_w
 		int mode = eax;
 		for (i = 0; i < 8; i++) {
 			if (task->fhandle[i].buf == 0) {
@@ -668,14 +668,14 @@ int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 				fh->size = finfo->size;
 			}
 		}
-	} else if (edx == 29) {
+	} else if (edx == 29) { //fclose_r
 		fh = (FILEHANDLE *) eax;
 		if (fh->bpos != 0) {
 			file_savefile(fh, fh->bpos, task->fat, (char *) (ADR_DISKIMG + 0x003e00));
 		}
 		memman_free_4k(memman, (int) fh->buf, fh->bsize);
 		fh->buf = 0;
-	} else if (edx == 30) {
+	} else if (edx == 30) { //fwrite
 		int size = ecx, dsize, wsize = 0, usize = 4096;
 		char *sbuf = (char *) ebx + ds_base;
 		fh = (FILEHANDLE *) eax;

@@ -2,7 +2,7 @@ OBJS_API = putchar.obj putstr0.obj putstr1.obj end.obj openwin.obj putstrwin.obj
 		   boxfilwin.obj initmalloc.obj malloc.obj free.obj point.obj refreshwin.obj\
 		   linewin.obj closewin.obj getkey.obj alloctimer.obj inittimer.obj settimer.obj\
 		   freetimer.obj beep.obj fopen.obj fclose.obj fseek.obj fsize.obj fread.obj\
-		   cmdline.obj getlang.obj fopenEx.obj fcloseEx.obj fwrite.obj alloca.obj
+		   cmdline.obj getlang.obj fopen_w.obj fclose_w.obj fwrite.obj alloca.obj
 TOOLPATH=../z_tools/
 INCPATH=../z_tools/include/
 
