@@ -25,6 +25,6 @@ int api_fsize(int fhandle, int mode);
 int api_fread(char *buf, int maxsize, int fhandle);
 int api_cmdline(char *buf, int maxsize);
 int api_getlang(void);
-int api_fopen_w(char *fname, int mode);
+int api_fopen_w(char *fname);
 void api_fclose_w(int fhandle);
 int api_fwrite(char *buf, int maxsize, int fhandle);

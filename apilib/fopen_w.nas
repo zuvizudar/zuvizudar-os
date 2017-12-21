@@ -7,11 +7,10 @@
 
 [SECTION .text]
 
-_api_fopen_w:		; int api_fopen_w(char *fname, int mode);
+_api_fopen_w:		; int api_fopen_w(char *fname);
 		PUSH	EBX
 		MOV		EDX,28
 		MOV		EBX,[ESP+8]	
-		MOV		EAX,[ESP+12]
 		INT		0x40
 		POP		EBX
 		RET

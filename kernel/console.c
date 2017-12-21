@@ -653,11 +653,7 @@ int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 					(FILEINFO *) (ADR_DISKIMG + 0x002600), 224);
 			if (finfo != 0) {
 				fh->finfo = finfo;
-				if ((mode & 0x000f) != 0) {
-					file_skipfile(fh, finfo->size, task->fat, (char *) (ADR_DISKIMG + 0x003e00));
-				} else {
-					finfo->size = 0;
-				}
+				finfo->size = 0;
 			} else {
 				finfo = file_insert((char *) ebx + ds_base,
 						(FILEINFO *) (ADR_DISKIMG + 0x002600), 224, task->fat);

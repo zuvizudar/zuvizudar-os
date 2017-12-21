@@ -104,7 +104,7 @@ err:
 	}
 
 
-	fh = api_fopen_w(q,0x10);
+	fh = api_fopen_w(q);
 	
 
 	for (;;) {

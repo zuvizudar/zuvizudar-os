@@ -12,8 +12,7 @@ void file_readfat(int *fat, unsigned char *img){
 	}
 	return;
 }
-void file_loadfile(int clustno, int size, char *buf, int *fat, char *img)
-{
+void file_loadfile(int clustno, int size, char *buf, int *fat, char *img){
 	int i;
 	for (;;) {
 		if (size <= 512) {
@@ -31,8 +30,7 @@ void file_loadfile(int clustno, int size, char *buf, int *fat, char *img)
 	}
 	return;
 }
-FILEINFO *file_search(char *name, FILEINFO *finfo, int max)
-{
+FILEINFO *file_search(char *name, FILEINFO *finfo, int max){
 	int i, j;
 	char s[12];
 	for (j = 0; j < 11; j++) {
@@ -68,8 +66,7 @@ next:
 	}
 	return 0;
 }
-int file_searchfat(int *fat)
-{
+int file_searchfat(int *fat){
 	int i;
 	for (i = 0; i < 2880; i++) {
 		if (fat[i] == 0x0000) {
@@ -134,35 +131,8 @@ int file_savefile(FILEHANDLE *fh, int size, int *fat, char *img){
 	return wsize;
 }
 
-int file_skipfile(FILEHANDLE *fh, int size, int *fat, char *img)
-{
-	int nextno = fh->finfo->clustno;
-	int clustno = 0, ssize = 0, rsize;
 
-	for (; ssize < size - 512;) {
-		clustno = nextno;
-		nextno  = fat[clustno];
-		if (nextno >= 0x0ff8) {
-			break;
-		}
-		ssize += 512;
-	}
-	rsize = size - ssize;
-	if (rsize < 512) {
-		memcpy(fh->buf, img + nextno * 512, rsize);
-	} else if (rsize > 512) {
-		rsize = 512;
-		fh->finfo->size = ssize + rsize;
-	}
-	fh->pos     = ssize + rsize;
-	fh->bpos    = rsize % 512;
-	fh->clustno = clustno;
-
-	return fh->pos;
-}
-
-FILEINFO *file_insert(char *name,FILEINFO *finfo, int max, int *fat)
-{
+FILEINFO *file_insert(char *name,FILEINFO *finfo, int max, int *fat){
 	int i, j = 0, clustno;
 	char s[13];
 
@@ -205,8 +175,7 @@ FILEINFO *file_insert(char *name,FILEINFO *finfo, int max, int *fat)
 	return 0;
 }
 
-void file_time(FILEINFO *finfo)
-{
+void file_time(FILEINFO *finfo){
 	int i;
 	char t16[7];
 	unsigned short t10[7];
