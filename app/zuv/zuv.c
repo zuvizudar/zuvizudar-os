@@ -99,7 +99,7 @@ int check_char(unsigned char c,int not_front_flag){
 	if ('A' <= c && c <= 'Z') return 1;
 	if ('a' <= c && c <= 'z') return 1;
 	if (c == '_') return 1;
-	if(not_front_flag){//front以外は数字可
+	if(not_front_flag){
 		if ('0' <= c && c <= '9') return 1;
 	}
 	return 0;
@@ -108,7 +108,7 @@ int check_char(unsigned char c,int not_front_flag){
 int get_num(){
 	int l;
 	skip_space();
-	if(p[0]=='('){ //カッコ優先
+	if(p[0]=='('){
 		p++;
 		l=calc();
 		skip_space();
@@ -118,10 +118,10 @@ int get_num(){
 		p++;
 		return l;
 	}
-	if (check_char(p[0],0) != 0) { //変数
+	if (check_char(p[0],0) != 0) {
 		l = var[get_var()];
 	} 
-	else if ('0' <= p[0] && p[0] <= '9') { //定数
+	else if ('0' <= p[0] && p[0] <= '9') {
 		l = 0;
         while ('0' <= p[0] && p[0] <= '9') {
 			l = l * 10 + (p[0] - '0');
@@ -148,7 +148,7 @@ int get_var(){
 		syntaxError(3);
 	i = p[0];
 	while (check_char(p[0],1) != 0)
-		p++; // 2文字目以降は読み飛ばす(手抜き!).
+		p++;
 	return i;
 }
 
