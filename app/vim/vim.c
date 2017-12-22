@@ -16,7 +16,7 @@ struct PADINFO padinfo;
 short winbuf[336 * 261];
 
 void ZuviMain(void){
-	int win,w_x,w_y;
+	int win;
 	int i,j = 0,c=0;
 	int key_shift = 0;
 	char line[40];
@@ -47,17 +47,11 @@ void ZuviMain(void){
 	};
 	int fh;	
 
-	w_x = 336;
-	w_y = 261;
 	x = 76;
 	y = 56;
 	padinfo.x = 8;
 	padinfo.y = 30;
 	padinfo.c = 0;
-	win = api_openwin(winbuf, w_x, w_y, -1, "vim");
-	api_boxfilwin(win, 6, 26, w_x-7, w_y-7, 15);
-	api_boxfilwin(win, 7, 27, w_x-8, w_y-8, 7);
-	api_boxfilwin(win, padinfo.x,padinfo.y,padinfo.x+7,padinfo.y+15,padinfo.c);
 	/* コマンドライン解析 */
 	api_cmdline(s, 30);
 	for (p = s; *p > ' '; p++) { }	/* スペースが来るまで読み飛ばす */
@@ -102,6 +96,9 @@ err:
 	if (q == 0) {
 		goto err;
 	}
+	win = api_openwin(winbuf, w*8+16,h*16+37,-1, "vim");
+	api_boxfilwin(win, 6, 27, w*8+9,h*16+30,7);
+	api_boxfilwin(win, padinfo.x,padinfo.y,padinfo.x+7,padinfo.y+15,padinfo.c);
 
 
 	fh = api_fopen_w(q);
@@ -177,7 +174,7 @@ err:
 		if(j == c){
 			size[j+1] = 0;
 		}
-		if (i == '$') {/* space */	
+		if (i == '$') {//end
 			sizef--;
 			if (fh != 0) {
 				api_fwrite((char *)size, sizef, fh);
