@@ -42,7 +42,7 @@ int ZuviMain(void){
 			cnt++;
 		}
 	}
-	buf[cnt] = -1; //end
+	buf[cnt] = -1;
 
 	for (i = 0; i < 256; i++)
 		var[i] = 0;
@@ -50,7 +50,7 @@ int ZuviMain(void){
 	p = &buf[0];
 	for (;;) {
 		skip_space();
-		if (p[0] == -1) break; //end
+		if (p[0] == -1) break;
 		if (p[0] == '\n') {
 			p++;
 			continue;

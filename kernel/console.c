@@ -635,7 +635,6 @@ int *zuv_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 		reg[7]=task->langmode;
 	}
 	 else if (edx == 28) { //fopne_w
-		int mode = eax;
 		for (i = 0; i < 8; i++) {
 			if (task->fhandle[i].buf == 0) {
 				break;
